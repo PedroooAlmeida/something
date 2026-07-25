@@ -24,6 +24,8 @@ uv sync
 uv run uvicorn gordon.api:app --port 8001
 
 # 2. capture (separate deps — pyobjc/Vision etc.)
+#    Model calls are Anthropic (claude-opus-5) — was Grok/xAI on the original
+#    branch. Reads ANTHROPIC_API_KEY from the same root .env as the engine.
 python -m venv .venv-capture && . .venv-capture/bin/activate
 pip install -r capture/requirements.txt
 python -m capture.main            # or: python -m capture.live --debug

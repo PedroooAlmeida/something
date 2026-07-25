@@ -1,6 +1,6 @@
-"""Model roast classifier: xAI call on submissions the local rules didn't decide.
+"""Model roast classifier: Anthropic call on submissions the local rules didn't decide.
 
-Runs in a daemon thread so the ~400ms API call never blocks the 10Hz loop.
+Runs in a daemon thread so the API call never blocks the 10Hz loop.
 Verdict shape per capture.md: {score, category, evidence, confidence}.
 """
 import json
@@ -8,10 +8,8 @@ import os
 import queue
 import re
 import threading
-import urllib.error
-import urllib.request
 
-XAI_URL = "https://api.x.ai/v1/chat/completions"
+import anthropic
 
 CATEGORIES = {
     "prompt_specificity", "context_management", "verification",
@@ -55,7 +53,11 @@ class Classifier(threading.Thread):
         self.cfg = cfg
         self.fire_cb = fire_cb   # fire_cb(verdict, sem, app, window_title)
         self.debug = debug
-        self.api_key = os.environ.get("XAI_API_KEY", "")
+        self.api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        self.client = (
+            anthropic.Anthropic(api_key=self.api_key, timeout=cfg.model_timeout_s)
+            if self.api_key else None
+        )
         self.q = queue.Queue(maxsize=4)
 
     @property
@@ -87,26 +89,25 @@ class Classifier(threading.Thread):
     # -- API call -----------------------------------------------------------
 
     def classify(self, text, behavior, app):
-        """One xAI call. Returns validated verdict dict or None."""
+        """One Anthropic call. Returns validated verdict dict or None.
+        claude-opus-5 rejects sampling params, so no temperature; _parse
+        already tolerates prose around the JSON object."""
         metrics = {k: behavior.get(k) for k in
                    ("dwell_ms", "paste_sizes", "similarity_to_prev",
                     "submits_in_window")}
         user = (f"App: {app}\nBehavior metrics: {json.dumps(metrics)}\n"
                 f"Prompt:\n{text[:self.cfg.model_max_text]}")
-        body = json.dumps({
-            "model": self.cfg.xai_model,
-            "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-                         {"role": "user", "content": user}],
-            "response_format": {"type": "json_object"},
-            "temperature": 0.2,
-        }).encode()
-        req = urllib.request.Request(XAI_URL, data=body, headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-        })
-        with urllib.request.urlopen(req, timeout=self.cfg.model_timeout_s) as r:
-            out = json.loads(r.read())
-        raw = out["choices"][0]["message"]["content"]
+        resp = self.client.beta.messages.create(
+            model=self.cfg.anthropic_model,
+            max_tokens=300,
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user}],
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
+        )
+        if resp.stop_reason == "refusal" or not resp.content:
+            return None
+        raw = next((b.text for b in resp.content if b.type == "text"), "")
         return self._parse(raw)
 
     def _parse(self, raw):

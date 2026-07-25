@@ -51,17 +51,17 @@ class Config:
     cooldown_s: float = 45.0             # global min gap between fired events
     kind_cooldown_s: float = 600.0       # per-kind gap, unless escalating
 
-    # Model classifier (xAI; key from XAI_API_KEY in env or .env)
+    # Model classifier (Anthropic; key from ANTHROPIC_API_KEY in env or .env)
     model_enabled: bool = True
-    xai_model: str = "grok-4.20-0309-non-reasoning"
+    anthropic_model: str = "claude-opus-5"
     model_timeout_s: float = 10.0
     model_score_threshold: int = 55      # fire when score below this...
     model_confidence_min: float = 0.6    # ...and confidence above this
     model_max_text: int = 1500           # prompt chars sent to the model
 
-    # Live activity feed (gordon/live.py)
-    summary_interval_s: float = 8.0      # min gap between Grok summaries
-    live_max_text: int = 6000            # screen OCR chars sent to Grok
+    # Live activity feed (capture/live.py)
+    summary_interval_s: float = 8.0      # min gap between Claude summaries
+    live_max_text: int = 6000            # screen OCR chars sent to Claude
 
 
 def load(path: str = "config.json") -> Config:

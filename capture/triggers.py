@@ -36,7 +36,7 @@ class TriggerEngine:
         if self.model.enabled:
             self.model.start()
         elif debug:
-            print("[gordon:model] disabled (no XAI_API_KEY or model_enabled=false)")
+            print("[gordon:model] disabled (no ANTHROPIC_API_KEY or model_enabled=false)")
 
     def process(self, sem, app="", window_title=""):
         """Evaluate a semantic event; emit at most one roast event per sem."""

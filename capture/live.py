@@ -1,22 +1,22 @@
 """Live activity feed: watch the screen, summarize what the user is doing
-through Grok, emit JSON events.
+through Claude, emit JSON events.
 
 Loop: grab frontmost allowlisted window at 2Hz -> on change + every
-summary_interval_s, OCR the window -> one Grok call -> JSON event into
+summary_interval_s, OCR the window -> one Claude call -> JSON event into
 roast_events/ and onto stdout. Run: python -m capture.live [--debug]
 """
 import argparse
 import json
 import sys
 import time
-import urllib.request
 
+import anthropic
 import numpy as np
 import Quartz
 
 from . import config as config_mod
 from . import redact
-from .classifier import XAI_URL, load_env
+from .classifier import load_env
 from .emitter import Emitter
 from .ocr import ocr
 from .screen import Grabber, frontmost
@@ -43,9 +43,12 @@ class LiveFeed:
         load_env()
         self.cfg = cfg
         self.debug = debug
-        self.api_key = os.environ.get("XAI_API_KEY", "")
+        self.api_key = os.environ.get("ANTHROPIC_API_KEY", "")
         if not self.api_key:
-            sys.exit("[gordon] XAI_API_KEY missing (.env or env)")
+            sys.exit("[gordon] ANTHROPIC_API_KEY missing (.env or env)")
+        self.client = anthropic.Anthropic(
+            api_key=self.api_key, timeout=cfg.model_timeout_s
+        )
         self.grabber = Grabber()
         self.emitter = Emitter(cfg.events_dir)
         self.prev_gray = None
@@ -53,26 +56,30 @@ class LiveFeed:
         self.last_summary_ts = 0.0
         self.last_summary = ""
 
-    # -- grok ---------------------------------------------------------------
+    # -- claude ---------------------------------------------------------------
 
     def summarize(self, app, title, text):
         user = (f"Frontmost app: {app}\nWindow title: {title}\n"
                 f"Previous summary (avoid repeating verbatim): {self.last_summary}\n"
                 f"Full-screen OCR:\n{text}")
-        body = json.dumps({
-            "model": self.cfg.xai_model,
-            "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-                         {"role": "user", "content": user}],
-            "response_format": {"type": "json_object"},
-            "temperature": 0.3,
-        }).encode()
-        req = urllib.request.Request(XAI_URL, data=body, headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-        })
-        with urllib.request.urlopen(req, timeout=self.cfg.model_timeout_s) as r:
-            out = json.loads(r.read())
-        v = json.loads(out["choices"][0]["message"]["content"])
+        resp = self.client.beta.messages.create(
+            model=self.cfg.anthropic_model,
+            max_tokens=500,
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user}],
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
+        )
+        if resp.stop_reason == "refusal" or not resp.content:
+            return None
+        raw = next((b.text for b in resp.content if b.type == "text"), "")
+        start, end = raw.find("{"), raw.rfind("}")
+        if start == -1 or end <= start:
+            return None
+        try:
+            v = json.loads(raw[start:end + 1])
+        except json.JSONDecodeError:
+            return None
         if not isinstance(v.get("summary"), str) or not v["summary"].strip():
             return None
         return {"activity": str(v.get("activity", "other")),
