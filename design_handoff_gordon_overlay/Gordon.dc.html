@@ -732,7 +732,14 @@ class Component extends DCLogic {
   });
   openPanel = t => () => this.setState({ panel: true, tab: t });
   closePanel = () => this.setState({ panel: null });
-  setPersona = id => () => this.setState({ persona: id, panel: null });
+  setPersona = id => () => {
+    // persist server-side so the capture extension + engine pick it up
+    fetch(this.API + "/api/settings/personality", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personality_id: id }),
+    }).catch(() => {});
+    this.setState({ persona: id });
+  };
   setIntensity = n => () => this.setState({ intensity: n });
   setVolume = n => () => this.setState({ volume: n });
   toggleDevice = k => () => this.setState(s => ({ devices: {...s.devices, [k]: !s.devices[k]} }));

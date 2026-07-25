@@ -222,6 +222,7 @@
     v >= 75 ? 'oklch(0.72 0.15 165)' : v >= 45 ? 'oklch(0.78 0.14 70)' : 'oklch(0.72 0.18 32)';
 
   function render(v) {
+    if (v.personalityId) setPersona(v.personalityId);
     document.getElementById('score').textContent = v.score;
     document.getElementById('score').style.color = scoreColor(v.score);
     const vlabel = document.getElementById('vlabel');
@@ -308,7 +309,7 @@
     card.classList.toggle('muted', muted);
     muteBtn.textContent = muted ? '🔇 MUTED' : '🔊 SHUT UP';
     statusEl.textContent = muted ? 'MUTED — HE IS SEETHING' : 'SPEAKING · STREAMING AUDIO';
-    voiceEl.textContent = muted ? 'MUTED' : '11LABS · EMBER';
+    voiceEl.textContent = muted ? 'MUTED' : '11LABS · ' + currentVoice;
   };
   document.getElementById('kitchen').onclick = () => window.gordon?.openKitchen();
   document.getElementById('copy').onclick = (e) => {
@@ -330,6 +331,22 @@
     tool_selection: 'tool', context_management: 'context', verification: 'verify',
   };
   const SEV_LABEL = { 3: 'BURNT · SEVERITY 3', 2: 'RAW · SEVERITY 2', 1: 'STALE · SEVERITY 1', 0: 'SERVICEABLE' };
+  const PERSONAS = {
+    chef: { name: 'Angry Chef', voice: 'EMBER' }, angry_chef: { name: 'Angry Chef', voice: 'EMBER' },
+    prof: { name: 'Disappointed Professor', voice: 'SLATE' },
+    coach: { name: 'Overly Competitive Coach', voice: 'BLITZ' },
+    senior: { name: 'Passive-Aggressive Senior', voice: 'DRY' },
+    king: { name: 'Medieval King', voice: 'HERALD' },
+    mother: { name: 'Deeply Concerned Mother', voice: 'WARM' },
+  };
+  let currentVoice = 'EMBER';
+  function setPersona(id) {
+    const p = PERSONAS[id];
+    if (!p) return;
+    currentVoice = p.voice;
+    document.querySelector('.persona').textContent = p.name;
+    if (!muted) document.querySelector('.voice').textContent = '11LABS · ' + p.voice;
+  }
 
   // Map the backend Evaluation onto the overlay's verdict shape.
   function fromEvaluation(ev) {
@@ -348,6 +365,7 @@
       betterPrompt: ev.improved_prompt || '',
       source: ev.source || null,
       action: ev.action || 'none',
+      personalityId: ev.personality_id || null,
       footer:
         ev.action && ev.action !== 'none'
           ? `logged → ${cat} · ${ev.action}`
@@ -366,6 +384,8 @@
         show();
       } else if (msg.type === 'monitoring') {
         paused = !!msg.paused; // backend won't push verdicts while paused
+      } else if (msg.type === 'personality' && msg.personality_id) {
+        setPersona(msg.personality_id); // header updates the moment persona changes
       }
     };
     ws.onclose = () => setTimeout(connect, 3000);   // auto-reconnect
