@@ -1,0 +1,12 @@
+{
+  "name": "gordon-shell",
+  "version": "0.1.0",
+  "description": "Electron shell to preview the Gordon overlay prototype as a desktop app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^31.7.7"
+  }
+}
