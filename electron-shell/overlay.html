@@ -122,11 +122,7 @@
 </head>
 <body>
   <div id="stage">
-    <div class="devices">
-      <span class="chip firing"><span class="dot"></span>EMBER LAMP</span>
-      <span class="chip firing"><span class="dot"></span>DESK BUZZER</span>
-      <span class="chip"><span class="dot" style="background:oklch(0.4 0.015 268)"></span>BELL-BOT</span>
-    </div>
+    <div class="devices" id="devices"></div>
 
     <div class="card">
       <div class="head">
@@ -143,29 +139,24 @@
 
       <div class="body">
         <div class="scorerow">
-          <div><div class="score">14<small>/100</small></div><div class="vlabel">BURNT · SEVERITY 3</div></div>
+          <div><div class="score"><span id="score">–</span><small>/100</small></div><div class="vlabel" id="vlabel"></div></div>
           <div class="cats" id="cats"></div>
         </div>
 
         <div class="block roast">
           <div class="eyebrow">01 · ROAST</div>
-          <div class="quote">"Fix the error"? WHICH error, you donut? You've given me nothing.
-            I've seen more detail on a parking ticket.</div>
+          <div class="quote" id="roast"></div>
         </div>
 
         <div class="block diag">
           <div class="eyebrow">02 · DIAGNOSIS</div>
-          <div class="txt">No error text, no file, no stack trace. The model has to guess what's broken,
-            so it hallucinates a fix for a bug you never described. Zero specificity.</div>
+          <div class="txt" id="diag"></div>
         </div>
 
         <div class="block fix">
           <div class="fixrow"><div class="eyebrow">04 · BETTER PROMPT</div>
             <button class="copy" id="copy">COPY</button></div>
-          <pre class="code" id="code">The checkout POST to /v1/orders returns 500.
-Stack trace points to orders.ts:42 — `cart.total` is undefined
-for guest carts. Here's the handler [paste]. Fix the null case
-and tell me why it only breaks for guests.</pre>
+          <pre class="code" id="code"></pre>
         </div>
 
         <div class="actions">
@@ -174,7 +165,7 @@ and tell me why it only breaks for guests.</pre>
         </div>
 
         <div class="footer">
-          <span>logged → specificity · desk_buzzer</span>
+          <span id="footer"></span>
           <button class="kbtn" id="kitchen">VIEW KITCHEN</button>
         </div>
       </div>
@@ -199,21 +190,46 @@ and tell me why it only breaks for guests.</pre>
   style.textContent = '@keyframes gwave { from { transform: scaleY(.55); } to { transform: scaleY(1); } }';
   document.head.appendChild(style);
 
-  // category rows
-  const cats = [
-    ['SPEC', 14, true], ['TOKENS', 40, false], ['FRONTIER', 55, false],
-    ['TOOL', 62, false], ['CONTEXT', 33, false], ['VERIFY', 20, false],
+  // ── Render a verdict (see verdict-contract.js) into the card ──
+  const CATS = [
+    ['specificity', 'SPEC'], ['tokens', 'TOKENS'], ['frontier', 'FRONTIER'],
+    ['tool', 'TOOL'], ['context', 'CONTEXT'], ['verify', 'VERIFY'],
   ];
   const catEl = document.getElementById('cats');
-  cats.forEach(([lbl, v, primary]) => {
-    const color = v >= 70 ? 'oklch(0.72 0.15 165)' : v >= 40 ? 'oklch(0.78 0.14 70)' : 'oklch(0.72 0.18 32)';
-    const row = document.createElement('div');
-    row.className = 'cat' + (primary ? ' primary' : '');
-    row.innerHTML = `<span class="lbl">${lbl}</span>
-      <span class="track"><span class="fill" style="width:${v}%;background:${color}"></span></span>
-      <span class="val">${v}</span>`;
-    catEl.appendChild(row);
-  });
+  const scoreColor = (v) =>
+    v >= 75 ? 'oklch(0.72 0.15 165)' : v >= 45 ? 'oklch(0.78 0.14 70)' : 'oklch(0.72 0.18 32)';
+
+  function render(v) {
+    document.getElementById('score').textContent = v.score;
+    document.getElementById('score').style.color = scoreColor(v.score);
+    const vlabel = document.getElementById('vlabel');
+    vlabel.textContent = v.verdictLabel;
+    vlabel.style.color = scoreColor(v.score);
+    document.getElementById('roast').textContent = v.roast;
+    document.getElementById('diag').textContent = v.diagnosis;
+    document.getElementById('code').textContent = v.betterPrompt;
+    document.getElementById('footer').textContent = v.footer;
+
+    // category bars
+    catEl.innerHTML = '';
+    CATS.forEach(([key, lbl]) => {
+      const val = v.categories[key] ?? 0;
+      const primary = key === v.primaryCategory;
+      const row = document.createElement('div');
+      row.className = 'cat' + (primary ? ' primary' : '');
+      row.innerHTML = `<span class="lbl">${lbl}</span>
+        <span class="track"><span class="fill" style="width:${val}%;background:${scoreColor(val)}"></span></span>
+        <span class="val">${val}</span>`;
+      catEl.appendChild(row);
+    });
+
+    // devices fire based on how bad it was
+    const devEl = document.getElementById('devices');
+    const fire = (name, on) =>
+      `<span class="chip${on ? ' firing' : ''}"><span class="dot"${on ? '' : ' style="background:oklch(0.4 0.015 268)"'}></span>${name}</span>`;
+    devEl.innerHTML =
+      fire('EMBER LAMP', v.severity >= 1) + fire('DESK BUZZER', v.severity >= 2) + fire('BELL-BOT', v.severity >= 3);
+  }
 
   const stage = document.getElementById('stage');
   let hideTimer = null;
@@ -255,11 +271,11 @@ and tell me why it only breaks for guests.</pre>
     setTimeout(() => (e.target.textContent = 'COPY'), 1600);
   };
 
-  // main process fires this on ⌥⌘Y (stand-in for a real caught prompt)
-  window.gordon?.onYell(() => show());
-
-  // DEBUG: show immediately on load so the overlay is visibly proven to render
-  show();
+  // main sends a scored verdict → render it and pop up
+  window.gordon?.onVerdict((verdict) => {
+    render(verdict);
+    show();
+  });
 </script>
 </body>
 </html>

@@ -5,6 +5,6 @@ contextBridge.exposeInMainWorld('gordon', {
   setInteractive: (on) => ipcRenderer.send('overlay:interactive', on),
   // renderer -> main: open the Kitchen dashboard window
   openKitchen: () => ipcRenderer.send('overlay:open-kitchen'),
-  // main -> renderer: Gordon caught a bad prompt, show the verdict
-  onYell: (cb) => ipcRenderer.on('gordon:yell', cb),
+  // main -> renderer: a scored prompt is ready — render this verdict and pop up
+  onVerdict: (cb) => ipcRenderer.on('gordon:verdict', (_e, verdict) => cb(verdict)),
 });

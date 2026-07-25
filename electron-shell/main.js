@@ -4,16 +4,35 @@ const {
   globalShortcut,
   ipcMain,
   screen,
+  clipboard,
 } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
-const KITCHEN_PAGE = path.join(
-  __dirname,
-  '..',
-  'design_handoff_gordon_overlay',
-  'Gordon.dc.html'
-);
+const { scorePrompt, hasKey } = require('./scorer');
+
+// ── Load electron-shell/.env into process.env (so ABHAY's key is picked up) ──
+function loadDotEnv() {
+  try {
+    const raw = fs.readFileSync(path.join(__dirname, '.env'), 'utf8');
+    for (const line of raw.split('\n')) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/i);
+      if (m && !process.env[m[1]]) {
+        process.env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+      }
+    }
+  } catch {
+    /* no .env yet — fine, scorer falls back to mock */
+  }
+}
+loadDotEnv();
+
+const KITCHEN_PAGE = path.join(__dirname, '..', 'design_handoff_gordon_overlay', 'Gordon.dc.html');
 const OVERLAY_PAGE = path.join(__dirname, 'overlay.html');
+
+// Stand-in prompt used when there's nothing on the clipboard — until the capture
+// teammate feeds Gordon the real submitted prompt, this is what he scores.
+const SAMPLE_PROMPT = 'fix the error';
 
 let overlayWin = null;
 let kitchenWin = null;
@@ -46,12 +65,10 @@ function createOverlay() {
     },
   });
 
-  // float above full-screen apps too
   overlayWin.setAlwaysOnTop(true, 'screen-saver');
   overlayWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-
-  // Interactive by default so the card's buttons always work. When the card is
-  // hidden the renderer asks us to go click-through (see ipc 'overlay:interactive').
+  // Interactive by default so the card's buttons always work; the renderer asks
+  // us to go click-through when the card is hidden (ipc 'overlay:interactive').
   overlayWin.loadFile(OVERLAY_PAGE);
 }
 
@@ -73,14 +90,22 @@ function openKitchen() {
   kitchenWin.on('closed', () => (kitchenWin = null));
 }
 
+// Score a prompt and push the verdict to the overlay so it pops up.
+async function yell(promptText) {
+  if (!overlayWin || overlayWin.isDestroyed()) return;
+  const verdict = await scorePrompt(promptText);
+  overlayWin.webContents.send('gordon:verdict', verdict);
+}
+
 app.whenReady().then(() => {
   createOverlay();
 
-  // Show both surfaces on launch so it's obvious the app is running:
-  // open the Kitchen window, and pop Gordon's overlay after it loads.
+  console.log(`[gordon] scoring mode: ${hasKey() ? 'REAL (Claude)' : 'MOCK (no ANTHROPIC_API_KEY — Abhay wires this)'}`);
+
+  // On launch, pop a verdict so it's obvious the app is running.
   openKitchen();
   overlayWin.webContents.once('did-finish-load', () => {
-    setTimeout(() => overlayWin.webContents.send('gordon:yell'), 1200);
+    setTimeout(() => yell(SAMPLE_PROMPT), 1200);
   });
 
   // ⌥⌘G — open/close the Kitchen dashboard
@@ -89,9 +114,12 @@ app.whenReady().then(() => {
     else openKitchen();
   });
 
-  // ⌥⌘Y — simulate Gordon catching a bad prompt (demo trigger for the popup)
+  // ⌥⌘Y — DEV capture stand-in: score whatever's on the clipboard, then yell.
+  // The real capture teammate replaces this trigger with actual prompt capture,
+  // calling yell(capturedPrompt) — the rest of the pipeline is unchanged.
   globalShortcut.register('CommandOrControl+Alt+Y', () => {
-    if (overlayWin) overlayWin.webContents.send('gordon:yell');
+    const text = clipboard.readText();
+    yell(text || SAMPLE_PROMPT);
   });
 
   app.on('activate', () => {
@@ -101,7 +129,7 @@ app.whenReady().then(() => {
 
 // Renderer tells us when the card is visible → capture clicks; else click-through
 ipcMain.on('overlay:interactive', (_e, interactive) => {
-  if (!overlayWin) return;
+  if (!overlayWin || overlayWin.isDestroyed()) return;
   if (interactive) overlayWin.setIgnoreMouseEvents(false);
   else overlayWin.setIgnoreMouseEvents(true, { forward: true });
 });
