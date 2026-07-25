@@ -15,7 +15,7 @@ from .emitter import Emitter
 from .machine import Machine
 from .ocr import ocr
 from .screen import Grabber, frontmost
-from .textutil import clean_ocr
+from .textutil import clean_ocr, detect_model
 from .triggers import TriggerEngine
 
 GRID_ROWS, GRID_COLS = 6, 8
@@ -36,6 +36,7 @@ class Watcher:
         self.pending_ocr = False   # composer changed but OCR was rate-limited
         self.cur_app = ""
         self.cur_title = ""
+        self.model_by_app = {}     # app name -> last model id seen in its picker
 
     # -- helpers ------------------------------------------------------------
 
@@ -111,9 +112,13 @@ class Watcher:
             # chars would break vagueness/affirmation matching. ~120ms, small crop.
             raw = ocr(self.grabber.crop(self.cfg.composer_band), fast=False)
             composer_text = clean_ocr(raw, self.cfg.placeholders)
+            model = detect_model(raw)   # picker label is chrome; scan pre-clean
+            if model:
+                self.model_by_app[app] = model
             if self.debug:
                 print(f"[gordon:ocr] {app}: {composer_text[:100]!r}")
 
+        self.emitter.selected_model = self.model_by_app.get(app, "unknown")
         for sem in machine.feed(now, composer_text=composer_text,
                                 conv_changed=conv_changed, scrolled=scrolled):
             self.dispatch(sem)
@@ -141,10 +146,14 @@ def main():
     ap.add_argument("--config", default="config.json")
     ap.add_argument("--debug", action="store_true",
                     help="print state transitions and gate decisions")
+    ap.add_argument("--submit-only", action="store_true",
+                    help="demo/privacy mode: fire only on submissions")
     args = ap.parse_args()
     if not check_permission():
         sys.exit(1)
     cfg = config_mod.load(args.config)
+    if args.submit_only:
+        cfg.submit_only = True
     try:
         Watcher(cfg, debug=args.debug).run()
     except KeyboardInterrupt:

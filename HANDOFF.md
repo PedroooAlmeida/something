@@ -48,8 +48,11 @@ uv run python scripts/bridge.py
 | `GET /health` | — | key/voice config status |
 
 Event mapping (bridge does this; Person 4 can inline it): capture event
-`{kind, category, severity, evidence, ts, iso, app, window_title, behavior{text}, event_id}`
-→ engine `CaptureEvent{event_id, timestamp: iso, application: app, prompt_text: behavior.text || evidence, session_id: window_title, source: "screen_capture"}`.
+`{kind, category, severity, evidence, ts, iso, app, window_title, behavior{text}, event_id, selected_model}`
+→ engine `CaptureEvent{event_id, timestamp: iso, application: app, prompt_text: behavior.text || evidence, session_id: window_title, selected_model, source: "screen_capture"}`.
+`selected_model` is OCR'd from the app's model picker (`"unknown"` when not seen).
+Demo/privacy mode: run the watcher with `--submit-only` so only
+submission-triggered events fire (per PRD "capture only on submit").
 
 ## Known deviations / open items for the team
 

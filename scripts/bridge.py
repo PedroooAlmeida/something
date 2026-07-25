@@ -29,7 +29,7 @@ def to_capture_event(raw: dict, personality_id: str) -> dict:
         "source": "screen_capture",
         "application": raw.get("app", ""),
         "prompt_text": prompt_text,
-        "selected_model": "unknown",
+        "selected_model": raw.get("selected_model") or "unknown",
         "screenshot_path": None,
         "session_id": raw.get("window_title", ""),
         "personality_id": personality_id,

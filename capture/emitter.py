@@ -8,10 +8,14 @@ import uuid
 class Emitter:
     def __init__(self, events_dir):
         self.events_dir = events_dir
+        # Last model name OCR'd from the frontmost app's picker; the watcher
+        # updates this each tick so every event carries it.
+        self.selected_model = "unknown"
         os.makedirs(events_dir, exist_ok=True)
 
     def write(self, event: dict) -> str:
         event = dict(event)
+        event.setdefault("selected_model", self.selected_model)
         event["event_id"] = str(uuid.uuid4())
         event["iso"] = datetime.datetime.fromtimestamp(
             event["ts"], datetime.timezone.utc).isoformat()

@@ -50,6 +50,9 @@ class Config:
     # Gate
     cooldown_s: float = 45.0             # global min gap between fired events
     kind_cooldown_s: float = 600.0       # per-kind gap, unless escalating
+    # Demo/privacy mode per PRD: only submission-triggered events fire
+    # (paste/reading_ended sems are dropped). CLI: --submit-only.
+    submit_only: bool = False
 
     # Model classifier (Anthropic; key from ANTHROPIC_API_KEY in env or .env)
     model_enabled: bool = True

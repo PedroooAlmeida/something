@@ -40,6 +40,9 @@ class TriggerEngine:
 
     def process(self, sem, app="", window_title=""):
         """Evaluate a semantic event; emit at most one roast event per sem."""
+        if getattr(self.cfg, "submit_only", False) and sem.kind != "submission":
+            self._log(f"suppressed {sem.kind}: submit_only mode")
+            return None
         rule = self._match(sem)
         if rule is not None:
             return self._fire(rule, sem, app, window_title)

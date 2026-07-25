@@ -68,6 +68,37 @@ def jaccard(a: str, b: str) -> float:
     return len(wa & wb) / len(wa | wb)
 
 
+# Model-picker text seen in composer OCR. First matching family wins; the
+# demo targets Claude apps, so the claude pattern is checked first.
+MODEL_PATTERNS = [
+    (re.compile(r"\b(?:claude[\s-]+)?(opus|sonnet|haiku|fable)[\s-]?"
+                r"(\d(?:\.\d)?)\b", re.I),
+     lambda m: f"claude-{m.group(1).lower()}-{m.group(2)}"),
+    (re.compile(r"\bgpt[\s-]?(\d(?:\.\d)?|4o)(?:[\s-](mini|nano|turbo|pro))?\b",
+                re.I),
+     lambda m: "gpt-" + m.group(1).lower()
+               + (f"-{m.group(2).lower()}" if m.group(2) else "")),
+    (re.compile(r"\bgemini[\s-]?(\d(?:\.\d)?)(?:[\s-](pro|flash|ultra))?\b",
+                re.I),
+     lambda m: "gemini-" + m.group(1)
+               + (f"-{m.group(2).lower()}" if m.group(2) else "")),
+    (re.compile(r"\bgrok[\s-]?(\d(?:\.\d+)?)\b", re.I),
+     lambda m: f"grok-{m.group(1)}"),
+    (re.compile(r"\bdeepseek(?:[\s-]?([vr]\d))?\b", re.I),
+     lambda m: "deepseek" + (f"-{m.group(1).lower()}" if m.group(1) else "")),
+]
+
+
+def detect_model(text: str) -> str | None:
+    """Best-effort model name from OCR text (picker labels like 'Opus 5',
+    'GPT-4o mini'). Returns normalized id, or None if nothing recognized."""
+    for pattern, norm in MODEL_PATTERNS:
+        m = pattern.search(text)
+        if m:
+            return norm(m)
+    return None
+
+
 def clean_ocr(text: str, placeholders: list) -> str:
     """Drop UI-chrome lines (composer placeholders, send buttons) from OCR output."""
     kept = []
