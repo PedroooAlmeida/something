@@ -24,9 +24,12 @@ class LLMError(RuntimeError):
 def _get_client() -> anthropic.AsyncAnthropic:
     global _client
     if _client is None:
-        _client = anthropic.AsyncAnthropic(
-            api_key=config.ANTHROPIC_API_KEY, timeout=config.EVAL_TIMEOUT_S
-        )
+        # No key in env/.env -> zero-arg client so the SDK can resolve an
+        # `ant auth login` profile or ANTHROPIC_AUTH_TOKEN instead.
+        kwargs: dict = {"timeout": config.EVAL_TIMEOUT_S}
+        if config.ANTHROPIC_API_KEY:
+            kwargs["api_key"] = config.ANTHROPIC_API_KEY
+        _client = anthropic.AsyncAnthropic(**kwargs)
     return _client
 
 

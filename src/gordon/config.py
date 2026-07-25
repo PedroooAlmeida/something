@@ -72,6 +72,9 @@ ACTION_BY_SEVERITY: dict[int, str] = {1: "toast", 2: "desk_buzzer", 3: "desk_buz
 # --- knowledge ---
 KNOWLEDGE_MAX_MATCHES = 3
 
+# --- harness ---
+HARNESS_CONCURRENCY = 8
+
 
 def refresh() -> None:
     """Re-read env-derived settings (used by tests and the M7 fallback drill)."""

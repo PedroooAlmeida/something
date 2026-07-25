@@ -11,10 +11,12 @@ from gordon.personalities import Personality
 from gordon.schemas import CaptureEvent, EngineResponse, Evaluation, TimingMs
 
 
-async def evaluate(event: CaptureEvent) -> EngineResponse:
+async def evaluate(event: CaptureEvent, *, with_audio: bool = True) -> EngineResponse:
     """Stream the evaluation model; the roast is spoken the moment its closing
     quote arrives (invariant 1), audio never blocks the response (invariant 2),
-    safety always runs before synthesis (invariant 3)."""
+    safety always runs before synthesis (invariant 3).
+
+    with_audio=False (harness text-only mode) skips synthesis entirely."""
     t0 = time.perf_counter()
     personality = personalities.get(event.personality_id)
     records = knowledge.match(event.prompt_text)
@@ -37,7 +39,9 @@ async def evaluate(event: CaptureEvent) -> EngineResponse:
                     candidate = extractor.feed(chunk)
                     if candidate is not None:
                         roast_ready_ms = _ms_since(t0)
-                        spoken_roast, handle = _speak(candidate, safety_context, personality)
+                        spoken_roast, handle = _speak(
+                            candidate, safety_context, personality, with_audio
+                        )
             evaluation = Evaluation.model_validate(parsing.recover_json("".join(raw)))
             break
         except (ValueError, ValidationError, llm.LLMError) as exc:
@@ -50,7 +54,7 @@ async def evaluate(event: CaptureEvent) -> EngineResponse:
     # Extractor missed (unexpected key order etc.) — speak the validated roast now.
     if spoken_roast is None:
         roast_ready_ms = _ms_since(t0)
-        spoken_roast, handle = _speak(evaluation.roast, safety_context, personality)
+        spoken_roast, handle = _speak(evaluation.roast, safety_context, personality, with_audio)
 
     response = _respond(event, personality, evaluation, spoken_roast, handle, roast_ready_ms, t0)
     print(
@@ -62,7 +66,7 @@ async def evaluate(event: CaptureEvent) -> EngineResponse:
 
 
 def _speak(
-    roast: str, safety_context: str, personality: Personality
+    roast: str, safety_context: str, personality: Personality, with_audio: bool
 ) -> tuple[str, voice.SynthHandle | None]:
     """Safety filter, then fire synthesis in the background. Never blocks.
     Returns the text that is both shown and spoken (identical by design)."""
@@ -71,7 +75,9 @@ def _speak(
         print(f"[safety] dropped from roast: {note}")
     safe = safe.strip()
     if not safe:
-        return config.SAFE_FALLBACK_ROAST, None
+        safe = config.SAFE_FALLBACK_ROAST
+    if not with_audio:
+        return safe, None
     settings = personality.voice_settings(config.SYNTH_DEFAULT_SEVERITY)
     return safe, voice.start_synthesis(safe, personality.voice_id, settings)
 
