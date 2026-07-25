@@ -100,13 +100,11 @@ async function yell(promptText) {
 app.whenReady().then(() => {
   createOverlay();
 
-  console.log(`[gordon] scoring mode: ${hasKey() ? 'REAL (Claude)' : 'MOCK (no ANTHROPIC_API_KEY — Abhay wires this)'}`);
+  console.log(`[gordon] local ⌥⌘Y scorer: ${hasKey() ? 'REAL (Claude)' : 'MOCK'}. Live verdicts come from the backend WebSocket.`);
 
-  // On launch, pop a verdict so it's obvious the app is running.
+  // Open the Kitchen on launch. The overlay stays idle (invisible) until a real
+  // verdict arrives over the backend WebSocket — that's the intended behaviour.
   openKitchen();
-  overlayWin.webContents.once('did-finish-load', () => {
-    setTimeout(() => yell(SAMPLE_PROMPT), 1200);
-  });
 
   // ⌥⌘G — open/close the Kitchen dashboard
   globalShortcut.register('CommandOrControl+Alt+G', () => {

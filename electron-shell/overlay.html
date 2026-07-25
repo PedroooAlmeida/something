@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
+<link rel="stylesheet" href="fonts.css">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -99,8 +100,18 @@
            border-left: 2px solid oklch(0.78 0.17 34); }
   .roast .eyebrow { color: oklch(0.82 0.14 45); }
   .roast .quote { font: 500 14.5px/1.5 'Space Grotesk', sans-serif; color: oklch(0.95 0.008 268); }
-  .diag .eyebrow, .fix .eyebrow { color: oklch(0.55 0.015 268); }
-  .diag .txt { font: 400 12.5px/1.6 'Space Grotesk', sans-serif; color: oklch(0.78 0.012 268); }
+  .diag .eyebrow, .fix .eyebrow, .lesson .eyebrow { color: oklch(0.55 0.015 268); }
+  .diag .txt, .lesson .txt { font: 400 12.5px/1.6 'Space Grotesk', sans-serif; color: oklch(0.78 0.012 268); }
+  /* frontier knowledge card (only when the verdict cites a source) */
+  .frontier { padding: 11px 12px; border-radius: 10px; background: oklch(0.2 0.03 292); border: 1px solid oklch(0.36 0.05 292); }
+  .fr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .fr-eyebrow { font: 400 9px/1 'IBM Plex Mono', monospace; letter-spacing: .12em; color: oklch(0.76 0.13 300); }
+  .fr-date { font: 400 9px/1 'IBM Plex Mono', monospace; color: oklch(0.62 0.06 292); }
+  .fr-body { font: 400 12px/1.55 'Space Grotesk', sans-serif; color: oklch(0.85 0.02 292); }
+  .fr-link { display: inline-block; margin-top: 7px; font: 500 9.5px/1 'IBM Plex Mono', monospace; letter-spacing: .04em;
+             color: oklch(0.78 0.13 300); text-decoration: none; }
+  .fr-link:hover { text-decoration: underline; }
+  .fr-conf { margin-left: 8px; font: 400 9px/1 'IBM Plex Mono', monospace; color: oklch(0.55 0.03 292); }
   .fixrow { display: flex; align-items: center; justify-content: space-between; }
   .copy { border: 1px solid oklch(0.3 0.02 268); background: transparent; color: oklch(0.65 0.015 268);
           font: 500 9px/1 'IBM Plex Mono', monospace; padding: 4px 7px; border-radius: 5px; cursor: pointer; }
@@ -151,6 +162,17 @@
         <div class="block diag">
           <div class="eyebrow">02 · DIAGNOSIS</div>
           <div class="txt" id="diag"></div>
+        </div>
+
+        <div class="block lesson" id="lessonBlock">
+          <div class="eyebrow">03 · LESSON</div>
+          <div class="txt" id="lesson"></div>
+        </div>
+
+        <div class="frontier" id="frontier" style="display:none">
+          <div class="fr-top"><span class="fr-eyebrow">FRONTIER KNOWLEDGE</span><span class="fr-date" id="frDate"></span></div>
+          <div class="fr-body" id="frText"></div>
+          <div><a class="fr-link" id="frLink" target="_blank" rel="noopener">OPEN RELEASE NOTE ↗</a><span class="fr-conf" id="frConf"></span></div>
         </div>
 
         <div class="block fix">
@@ -210,6 +232,22 @@
     document.getElementById('code').textContent = v.betterPrompt;
     document.getElementById('footer').textContent = v.footer;
 
+    // 03 · LESSON (hide the block if there's no lesson)
+    const lessonBlock = document.getElementById('lessonBlock');
+    if (v.lesson) { document.getElementById('lesson').textContent = v.lesson; lessonBlock.style.display = ''; }
+    else lessonBlock.style.display = 'none';
+
+    // frontier knowledge card — only when the verdict cites a source
+    const fr = document.getElementById('frontier');
+    if (v.source && v.source.text) {
+      document.getElementById('frText').textContent = v.source.text;
+      document.getElementById('frDate').textContent = v.source.date || '';
+      const link = document.getElementById('frLink');
+      if (v.source.url) { link.href = v.source.url; link.style.display = ''; } else link.style.display = 'none';
+      document.getElementById('frConf').textContent = v.source.confidence ? `confidence: ${v.source.confidence}` : '';
+      fr.style.display = '';
+    } else fr.style.display = 'none';
+
     // category bars
     catEl.innerHTML = '';
     CATS.forEach(([key, lbl]) => {
@@ -223,12 +261,20 @@
       catEl.appendChild(row);
     });
 
-    // devices fire based on how bad it was
+    // devices: fire the exact device the backend chose (falls back to severity
+    // when there's no action, e.g. the offline mock path)
     const devEl = document.getElementById('devices');
     const fire = (name, on) =>
       `<span class="chip${on ? ' firing' : ''}"><span class="dot"${on ? '' : ' style="background:oklch(0.4 0.015 268)"'}></span>${name}</span>`;
-    devEl.innerHTML =
-      fire('EMBER LAMP', v.severity >= 1) + fire('DESK BUZZER', v.severity >= 2) + fire('BELL-BOT', v.severity >= 3);
+    const actionDevice = { smart_light: 'EMBER LAMP', desk_buzzer: 'DESK BUZZER', bell_bot: 'BELL-BOT' };
+    const firing = new Set();
+    if (v.action && actionDevice[v.action]) firing.add(actionDevice[v.action]);
+    else {
+      if (v.severity >= 1) firing.add('EMBER LAMP');
+      if (v.severity >= 2) firing.add('DESK BUZZER');
+      if (v.severity >= 3) firing.add('BELL-BOT');
+    }
+    devEl.innerHTML = ['EMBER LAMP', 'DESK BUZZER', 'BELL-BOT'].map((n) => fire(n, firing.has(n))).join('');
   }
 
   const stage = document.getElementById('stage');
@@ -271,11 +317,61 @@
     setTimeout(() => (e.target.textContent = 'COPY'), 1600);
   };
 
-  // main sends a scored verdict → render it and pop up
+  // main sends a scored verdict → render it and pop up (offline / ⌥⌘Y path)
   window.gordon?.onVerdict((verdict) => {
     render(verdict);
     show();
   });
+
+  // ── Live backend: real verdicts arrive over the WebSocket ──
+  const WS_URL = 'wss://gordon-platform.fly.dev/ws/overlay';
+  const CAT_MAP = {
+    prompt_specificity: 'specificity', token_conservation: 'tokens', frontier_awareness: 'frontier',
+    tool_selection: 'tool', context_management: 'context', verification: 'verify',
+  };
+  const SEV_LABEL = { 3: 'BURNT · SEVERITY 3', 2: 'RAW · SEVERITY 2', 1: 'STALE · SEVERITY 1', 0: 'SERVICEABLE' };
+
+  // Map the backend Evaluation onto the overlay's verdict shape.
+  function fromEvaluation(ev) {
+    const categories = {};
+    for (const [k, val] of Object.entries(ev.category_scores || {})) categories[CAT_MAP[k] || k] = val;
+    const cat = ev.primary_category || '';
+    return {
+      score: ev.overall_score,
+      severity: ev.severity,
+      verdictLabel: SEV_LABEL[ev.severity] || `SEVERITY ${ev.severity}`,
+      primaryCategory: CAT_MAP[cat] || cat,
+      categories,
+      roast: ev.roast || '',
+      diagnosis: ev.diagnosis || '',
+      lesson: ev.lesson || '',
+      betterPrompt: ev.improved_prompt || '',
+      source: ev.source || null,
+      action: ev.action || 'none',
+      footer:
+        ev.action && ev.action !== 'none'
+          ? `logged → ${cat} · ${ev.action}`
+          : ev.severity > 0 ? `logged → ${cat}` : 'nothing logged. shame.',
+    };
+  }
+
+  let paused = false;
+  function connect() {
+    let ws;
+    try { ws = new WebSocket(WS_URL); } catch { setTimeout(connect, 3000); return; }
+    ws.onmessage = (e) => {
+      let msg; try { msg = JSON.parse(e.data); } catch { return; }
+      if (msg.type === 'coaching_response' && msg.evaluation) {
+        render(fromEvaluation(msg.evaluation));
+        show();
+      } else if (msg.type === 'monitoring') {
+        paused = !!msg.paused; // backend won't push verdicts while paused
+      }
+    };
+    ws.onclose = () => setTimeout(connect, 3000);   // auto-reconnect
+    ws.onerror = () => ws.close();
+  }
+  connect();
 </script>
 </body>
 </html>

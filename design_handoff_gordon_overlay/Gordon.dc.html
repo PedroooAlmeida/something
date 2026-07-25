@@ -8,9 +8,7 @@
 <body>
 <x-dc>
 <helmet data-dc-atomics>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fonts.css">
 <style>
 html,body{margin:0;padding:0;background:oklch(0.13 0.014 268);color:oklch(0.94 0.008 268);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 *{box-sizing:border-box}
@@ -629,8 +627,43 @@ class Component extends DCLogic {
       {time:"23:41", cat:"SPECIFICITY", text:"\"fix the error\"", score:14},
       {time:"23:12", cat:"VERIFICATION", text:"shipped generated migration without running it", score:31},
       {time:"22:58", cat:"TOOL", text:"asked a chatbot to run a terminal command", score:44}
-    ]
+    ],
+    // live backend data (null until componentDidMount fetches; falls back to the demo values above)
+    ratingLabel: null, ratingStars: null, avgScore: null, worstCatLabel: null,
+    catHits: null, dailyText: null, trendData: null
   };
+
+  API = "https://gordon-platform.fly.dev";
+  async componentDidMount() {
+    try {
+      const [sum, daily, hist, events] = await Promise.all([
+        fetch(this.API + "/api/dashboard/summary").then(r => r.json()),
+        fetch(this.API + "/api/dashboard/daily").then(r => r.json()),
+        fetch(this.API + "/api/dashboard/history?days=14").then(r => r.json()),
+        fetch(this.API + "/api/events?limit=50").then(r => r.json()),
+      ]);
+      const catLabel = { prompt_specificity:"SPECIFICITY", token_conservation:"TOKEN", frontier_awareness:"FRONTIER", tool_selection:"TOOL", context_management:"CONTEXT", verification:"VERIFICATION" };
+      const history = (Array.isArray(events) ? events : []).map(e => ({
+        time: (e.timestamp || "").slice(11, 16),
+        cat: catLabel[e.primary_category] || (e.primary_category || "").toUpperCase(),
+        text: '"' + (e.prompt_text || "") + '"',
+        score: e.overall_score,
+      }));
+      const trendData = (Array.isArray(hist) ? hist : []).map(h => Math.round(h.average_score || 0));
+      this.setState({
+        todayCount: daily && typeof daily.today === "number" ? daily.today : this.state.todayCount,
+        saved: sum ? (sum.tokens_potentially_saved_estimate || 0) : this.state.saved,
+        ratingLabel: sum && sum.kitchen_rating ? sum.kitchen_rating.label : null,
+        ratingStars: sum && sum.kitchen_rating ? sum.kitchen_rating.stars : null,
+        avgScore: sum ? Math.round(sum.average_prompt_score) : null,
+        worstCatLabel: sum ? sum.worst_category : null,
+        catHits: sum ? sum.category_hits_14d : null,
+        dailyText: daily ? daily.text : null,
+        trendData: trendData.length ? trendData : null,
+        history: history.length ? history : this.state.history,
+      });
+    } catch (e) { /* offline — keep the demo data */ }
+  }
 
   timers = [];
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
@@ -692,7 +725,11 @@ class Component extends DCLogic {
     this.setState({ copied: true });
     this.later(() => this.setState({ copied: false }), 1600);
   };
-  togglePause = () => this.setState(s => ({ paused: !s.paused }));
+  togglePause = () => this.setState(s => {
+    const paused = !s.paused;
+    fetch(this.API + "/api/monitoring/" + (paused ? "pause" : "resume"), { method: "POST" }).catch(() => {});
+    return { paused };
+  });
   openPanel = t => () => this.setState({ panel: true, tab: t });
   closePanel = () => this.setState({ panel: null });
   setPersona = id => () => this.setState({ persona: id, panel: null });
@@ -701,7 +738,10 @@ class Component extends DCLogic {
   toggleDevice = k => () => this.setState(s => ({ devices: {...s.devices, [k]: !s.devices[k]} }));
   testDevice = () => { this.setState({firing:true}); this.later(() => this.setState({firing:false}), 1200); };
   toggleVoice = k => () => this.setState(s => ({ voiceFlags: {...s.voiceFlags, [k]: !s.voiceFlags[k]} }));
-  clearHistory = () => this.setState({ history: [], todayCount: 0 });
+  clearHistory = () => {
+    fetch(this.API + "/api/history", { method: "DELETE" }).catch(() => {});
+    this.setState({ history: [], todayCount: 0 });
+  };
   markOnboarded = () => { try { localStorage.setItem("gordon.onboarded", "1"); } catch (e) {} };
   obNext = () => this.setState(s => { if (s.onboardStep >= 3) { this.markOnboarded(); return {onboarded:true}; } return {onboardStep: s.onboardStep + 1}; });
   obBack = () => this.setState(s => { if (s.onboardStep <= 1) { this.markOnboarded(); return {onboarded:true}; } return {onboardStep: s.onboardStep - 1}; });
@@ -766,16 +806,24 @@ class Component extends DCLogic {
       return { x: (74 + r * Math.cos(a)).toFixed(1), y: (74 + r * Math.sin(a)).toFixed(1) };
     }) : [];
 
-    const trend = [31,28,36,34,42,39,47,44,52,49,58,55,61,67];
-    const tp = trend.map((v, i) => (i * (300 / 13)).toFixed(1) + "," + (105 - v * 0.95).toFixed(1));
-    const dashCats = [
-      ["Prompt specificity", 82, "12 hits"],
-      ["Token conservation", 64, "9 hits"],
-      ["Context management", 51, "7 hits"],
-      ["Verification", 38, "5 hits"],
-      ["Tool selection", 24, "3 hits"],
-      ["Frontier awareness", 14, "2 hits"]
-    ].map(([name, w, tag]) => ({
+    const trend = (st.trendData && st.trendData.length) ? st.trendData : [31,28,36,34,42,39,47,44,52,49,58,55,61,67];
+    const tpN = Math.max(1, trend.length - 1);
+    const tp = trend.map((v, i) => (i * (300 / tpN)).toFixed(1) + "," + (105 - v * 0.95).toFixed(1));
+    const catMeta = [
+      ["Prompt specificity","prompt_specificity"], ["Token conservation","token_conservation"],
+      ["Context management","context_management"], ["Verification","verification"],
+      ["Tool selection","tool_selection"], ["Frontier awareness","frontier_awareness"]
+    ];
+    const dashCatsSrc = st.catHits
+      ? (() => {
+          const max = Math.max(1, ...catMeta.map(([, k]) => st.catHits[k] || 0));
+          return catMeta.map(([name, k]) => {
+            const n = st.catHits[k] || 0;
+            return [name, Math.round((n / max) * 100), n + (n === 1 ? " hit" : " hits")];
+          });
+        })()
+      : [["Prompt specificity",82,"12 hits"],["Token conservation",64,"9 hits"],["Context management",51,"7 hits"],["Verification",38,"5 hits"],["Tool selection",24,"3 hits"],["Frontier awareness",14,"2 hits"]];
+    const dashCats = dashCatsSrc.map(([name, w, tag]) => ({
       name, tag, w: w + "%",
       color: w > 60 ? "oklch(0.7 0.18 32)" : w > 35 ? "oklch(0.78 0.14 85)" : "oklch(0.72 0.15 165)"
     }));
@@ -837,7 +885,7 @@ class Component extends DCLogic {
       {k:"fallback", label:"Fallback to local TTS", sub:"if the voice API fails mid-demo"}
     ].map(t => ({...t, ...this.toggleStyle(vf[t.k], accent), onClick: this.toggleVoice(t.k)}));
 
-    const ratingIdx = 3;
+    const ratingIdx = st.ratingStars != null ? st.ratingStars : 3;
     const ratingPips = [0,1,2,3,4].map(i => ({
       bg: i < ratingIdx ? "linear-gradient(90deg,oklch(0.8 0.15 58),oklch(0.65 0.18 30))" : "oklch(0.22 0.018 268)",
       border: i < ratingIdx ? "transparent" : "oklch(0.3 0.02 268)"
@@ -948,16 +996,18 @@ class Component extends DCLogic {
       tabSettings: st.tab === "settings",
       tabPrivacy: st.tab === "privacy",
 
-      ratingPips, ratingName: "Line Cook",
+      ratingPips, ratingName: st.ratingLabel || "Line Cook",
       ratingNote: "Two more clean days and he'll promote you to Chef de Partie. He will not be nice about it.",
-      dailySummary: st.todayCount === 0
+      dailySummary: st.dailyText
+        ? st.dailyText.split("\n")[0]
+        : st.todayCount === 0
         ? "Zero interruptions. Either you've improved or you've stopped working. I know which one I'd bet on."
-        : "You were yelled at " + st.todayCount + " times today. Yesterday it was 17. Unfortunately, this counts as progress.",
+        : "You were yelled at " + st.todayCount + " times today. Unfortunately, this counts as progress.",
       metrics: [
-        {label:"YELLED AT TODAY", value: st.todayCount, sub:"↓ from 17 yesterday", color:"oklch(0.8 0.16 40)"},
-        {label:"AVG PROMPT SCORE", value:"67", sub:"↑ 36 in two weeks", color:"oklch(0.78 0.15 165)"},
+        {label:"YELLED AT TODAY", value: st.todayCount, sub:"since midnight", color:"oklch(0.8 0.16 40)"},
+        {label:"AVG PROMPT SCORE", value: st.avgScore != null ? String(st.avgScore) : "67", sub:"last 14 days", color:"oklch(0.78 0.15 165)"},
         {label:"TOKENS NOT WASTED", value: (st.saved / 1000).toFixed(1) + "k", sub:"est. from shortened prompts", color:"oklch(0.9 0.01 268)"},
-        {label:"WORST CATEGORY", value:"Specificity", sub:"12 hits · 14 days", color:"oklch(0.8 0.14 85)"}
+        {label:"WORST CATEGORY", value: st.worstCatLabel || "Specificity", sub:"most hits · 14 days", color:"oklch(0.8 0.14 85)"}
       ],
       dashCats,
       trendLine: tp.join(" "),
