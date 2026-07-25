@@ -8,7 +8,7 @@ dependencies = [
     "uvicorn[standard]>=0.30",
     "httpx>=0.27",
     "pydantic>=2.7",
-    "openai>=1.60",
+    "anthropic>=0.116",
 ]
 
 [dependency-groups]

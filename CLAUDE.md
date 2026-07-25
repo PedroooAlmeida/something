@@ -27,7 +27,7 @@ If a task seems to require one of those, stub it and move on.
 - FastAPI + uvicorn (service)
 - httpx (async HTTP — used for ElevenLabs)
 - pydantic v2 (schemas)
-- openai SDK (evaluation model — **isolated behind one function so it can be swapped**)
+- anthropic SDK (evaluation model — **isolated behind one function so it can be swapped**)
 - pytest
 - Dependencies via `pyproject.toml`. `uv` if available, else pip.
 
@@ -130,7 +130,7 @@ acceptance criteria pass.** Ask me before skipping ahead.
 
 ### M0 — skeleton
 Package layout, `pyproject.toml`, `.env.example`, config module reading
-`OPENAI_API_KEY`, `ELEVENLABS_API_KEY`, `VOICE_CHEF`, `VOICE_PROF`, `EVAL_MODEL`.
+`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `VOICE_CHEF`, `VOICE_PROF`, `EVAL_MODEL`.
 `/health` returns config status.
 **Accept:** server starts, `/health` 200s with keys reported as missing.
 
@@ -156,8 +156,10 @@ Iterate on `SYSTEM_PROMPT` against the harness until:
 - no roast exceeds 35 words
 - `improved_prompt` is obviously better than the original in every case
 
-Temperature ~0.9 — jokes need variance. Test: if a roast could be pasted under a
-different prompt and still fit, it fails.
+Jokes need variance — claude-opus-5 rejects sampling params, so variance is a
+rubric instruction (vary angle/phrasing/metaphor every time), not a temperature
+knob. Test: if a roast could be pasted under a different prompt and still fit,
+it fails.
 **Accept:** harness output meets all five bars.
 
 ### M4 — second personality

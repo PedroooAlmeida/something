@@ -29,15 +29,17 @@ def _load_dotenv(path: Path) -> None:
 _load_dotenv(PROJECT_ROOT / ".env")
 
 # --- keys and model selection (read at import; call refresh() after env changes) ---
-OPENAI_API_KEY: str = os.environ.get("OPENAI_API_KEY", "")
+ANTHROPIC_API_KEY: str = os.environ.get("ANTHROPIC_API_KEY", "")
 ELEVENLABS_API_KEY: str = os.environ.get("ELEVENLABS_API_KEY", "")
 VOICE_CHEF: str = os.environ.get("VOICE_CHEF", "")
 VOICE_PROF: str = os.environ.get("VOICE_PROF", "")
-EVAL_MODEL: str = os.environ.get("EVAL_MODEL", "gpt-4.1-mini")
+EVAL_MODEL: str = os.environ.get("EVAL_MODEL", "claude-opus-5")
 
 # --- evaluation tunables ---
-EVAL_TEMPERATURE = 0.9  # jokes need variance (M3 spec)
-EVAL_MAX_TOKENS = 900
+# claude-opus-5 rejects sampling params (temperature 400s), so the spec's
+# "temperature ~0.9 for joke variance" is enforced by prompt in rubric.py instead.
+EVAL_EFFORT = "low"  # latency: roast must stream fast (invariant 1)
+EVAL_MAX_TOKENS = 1024
 EVAL_TIMEOUT_S = 30.0
 MAX_ROAST_WORDS = 35
 MAX_ROAST_SENTENCES = 2
@@ -61,24 +63,30 @@ ELEVENLABS_TIMEOUT_S = 20.0
 AUDIO_READY_POLL_S = 0.1  # /audio/{key} wait granularity while synthesis in flight
 AUDIO_READY_TIMEOUT_S = 10.0
 
+# --- engine behavior ---
+LLM_ATTEMPTS = 2  # one retry on unparseable model output
+SYNTH_DEFAULT_SEVERITY = 2  # severity streams in AFTER the roast; synth can't wait for it
+SAFE_FALLBACK_ROAST = "That prompt needs work. Let's fix it."  # spoken if safety empties the roast
+ACTION_BY_SEVERITY: dict[int, str] = {1: "toast", 2: "desk_buzzer", 3: "desk_buzzer"}
+
 # --- knowledge ---
 KNOWLEDGE_MAX_MATCHES = 3
 
 
 def refresh() -> None:
     """Re-read env-derived settings (used by tests and the M7 fallback drill)."""
-    global OPENAI_API_KEY, ELEVENLABS_API_KEY, VOICE_CHEF, VOICE_PROF, EVAL_MODEL
-    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+    global ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, VOICE_CHEF, VOICE_PROF, EVAL_MODEL
+    ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
     ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
     VOICE_CHEF = os.environ.get("VOICE_CHEF", "")
     VOICE_PROF = os.environ.get("VOICE_PROF", "")
-    EVAL_MODEL = os.environ.get("EVAL_MODEL", "gpt-4.1-mini")
+    EVAL_MODEL = os.environ.get("EVAL_MODEL", "claude-opus-5")
 
 
 def health_status() -> dict[str, object]:
     """Config status for GET /health — never leaks key material."""
     return {
-        "openai_key": bool(OPENAI_API_KEY),
+        "anthropic_key": bool(ANTHROPIC_API_KEY),
         "elevenlabs_key": bool(ELEVENLABS_API_KEY),
         "voice_chef": bool(VOICE_CHEF),
         "voice_prof": bool(VOICE_PROF),
