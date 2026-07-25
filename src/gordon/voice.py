@@ -53,7 +53,7 @@ def cache_key(text: str, voice_id: str, settings: dict, model_id: str) -> str:
         {"text": text, "voice_id": voice_id, "settings": settings, "model_id": model_id},
         sort_keys=True,
     )
-    return hashlib.sha256(payload.encode()).hexdigest()[:24]
+    return hashlib.sha256(payload.encode()).hexdigest()[: config.AUDIO_KEY_LENGTH]
 
 
 def find_audio(key: str) -> Path | None:
@@ -100,7 +100,10 @@ def _spawn(key: str, coro) -> asyncio.Task:
 
 
 def _finish(key: str, task: asyncio.Task) -> None:
-    _in_flight.pop(key, None)
+    # only evict our own entry — a stale callback must not evict a newer task
+    # for the same key (that would allow two concurrent writers on one .part)
+    if _in_flight.get(key) is task:
+        _in_flight.pop(key, None)
     if not task.cancelled() and (exc := task.exception()):
         print(f"[voice] synth task for {key} died: {exc}")
 
@@ -159,9 +162,14 @@ async def _elevenlabs_stream(text: str, voice_id: str, settings: dict, dest: Pat
 
 async def _system_tts(text: str, key: str) -> Path | None:
     """macOS `say` fallback straight to AAC/.m4a (plays in every browser);
-    aiff + afconvert as the second try on older macOS."""
+    aiff + afconvert as the second try on older macOS. All writes stage through
+    non-servable names so /audio pollers never see a partial file."""
+    if text.startswith("-"):
+        text = " " + text  # argv injection guard: never let text parse as a `say` flag
     m4a = config.AUDIO_CACHE_DIR / f"{key}.m4a"
     part = config.AUDIO_CACHE_DIR / f"{key}.m4a.part"
+    # ".part.aiff" keeps say's extension sniffing happy and is invisible to find_audio()
+    aiff_tmp = config.AUDIO_CACHE_DIR / f"{key}.part.aiff"
     try:
         proc = await asyncio.create_subprocess_exec(
             "say", "-o", str(part), "--file-format=m4af", "--data-format=aac", text,
@@ -172,22 +180,24 @@ async def _system_tts(text: str, key: str) -> Path | None:
             return m4a
         part.unlink(missing_ok=True)
 
-        aiff = config.AUDIO_CACHE_DIR / f"{key}.aiff"
-        proc = await asyncio.create_subprocess_exec("say", "-o", str(aiff), text)
-        if await proc.wait() != 0 or not aiff.exists():
+        proc = await asyncio.create_subprocess_exec("say", "-o", str(aiff_tmp), text)
+        if await proc.wait() != 0 or not aiff_tmp.exists():
             print("[voice] system `say` failed")
             return None
         conv = await asyncio.create_subprocess_exec(
-            "afconvert", "-f", "m4af", "-d", "aac", str(aiff), str(m4a),
+            "afconvert", "-f", "m4af", "-d", "aac", str(aiff_tmp), str(m4a),
             stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL,
         )
         if await conv.wait() == 0 and m4a.exists():
-            aiff.unlink(missing_ok=True)
+            aiff_tmp.unlink(missing_ok=True)
             return m4a
-        return aiff
+        final_aiff = config.AUDIO_CACHE_DIR / f"{key}.aiff"
+        aiff_tmp.rename(final_aiff)
+        return final_aiff
     except OSError as exc:
         print(f"[voice] system TTS failed: {exc}")
         part.unlink(missing_ok=True)
+        aiff_tmp.unlink(missing_ok=True)
         return None
 
 

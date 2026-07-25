@@ -32,6 +32,8 @@ async def evaluate(event: CaptureEvent, *, with_audio: bool = True) -> EngineRes
     for attempt in range(config.LLM_ATTEMPTS):
         raw: list[str] = []
         extractor = parsing.RoastExtractor()
+        # a failed attempt's roast must not pair with the retry's scores
+        spoken_roast, handle, roast_ready_ms = None, None, None
         try:
             async for chunk in llm.stream_llm(prompt):
                 raw.append(chunk)

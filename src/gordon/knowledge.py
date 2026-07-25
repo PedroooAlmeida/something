@@ -15,15 +15,27 @@ from functools import lru_cache
 from gordon import config
 
 
+_REQUIRED_FIELDS = frozenset(
+    {"technology", "what_changed", "release_date", "source_url", "old_option", "new_option"}
+)
+
+
 @lru_cache(maxsize=1)
 def _records() -> list[dict]:
     if not config.RELEASES_PATH.exists():
         return []
     try:
-        return json.loads(config.RELEASES_PATH.read_text())
+        raw = json.loads(config.RELEASES_PATH.read_text())
     except (json.JSONDecodeError, OSError) as exc:
         print(f"[knowledge] failed to load {config.RELEASES_PATH}: {exc}")
         return []
+    records = [
+        r for r in raw
+        if isinstance(r, dict) and _REQUIRED_FIELDS <= set(r)
+    ] if isinstance(raw, list) else []
+    if len(records) != (len(raw) if isinstance(raw, list) else 0):
+        print(f"[knowledge] skipped malformed entries in {config.RELEASES_PATH}")
+    return records
 
 
 def match(prompt_text: str) -> list[dict]:

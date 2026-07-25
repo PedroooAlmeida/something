@@ -54,14 +54,14 @@ async def classify(event: CaptureEvent) -> ClassifierVerdict:
         print(f"[classifier] event={event.event_id} heuristic: {verdict.reason}")
         return verdict
 
-    chunks: list[str] = []
-    async for chunk in llm.stream_llm(
-        rubric.build_classifier_prompt(event), max_tokens=config.CLASSIFIER_MAX_TOKENS
-    ):
-        chunks.append(chunk)
     try:
+        chunks: list[str] = []
+        async for chunk in llm.stream_llm(
+            rubric.build_classifier_prompt(event), max_tokens=config.CLASSIFIER_MAX_TOKENS
+        ):
+            chunks.append(chunk)
         verdict = ClassifierVerdict.model_validate(parsing.recover_json("".join(chunks)))
-    except (ValueError, ValidationError) as exc:
+    except (ValueError, ValidationError, llm.LLMError) as exc:
         # A broken classifier must not block the pipeline — default to roastworthy
         # and let the full evaluation (with its own retry) decide.
         print(f"[classifier] event={event.event_id} unparseable verdict, defaulting: {exc}")

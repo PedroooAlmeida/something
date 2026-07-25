@@ -13,15 +13,23 @@ FIXTURES_PATH = PROJECT_ROOT / "tests" / "fixtures" / "prompts.json"
 
 
 def _load_dotenv(path: Path) -> None:
-    """Minimal .env loader — no dependency. Real env vars win over file values."""
-    if not path.exists():
+    """Minimal .env loader — no dependency. Real env vars win over file values.
+    Handles `export KEY=...` prefixes and trailing `# comments`; never crashes boot."""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
         return
-    for line in path.read_text().splitlines():
+    for line in text.splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, value = line.partition("=")
-        key, value = key.strip(), value.strip().strip("'\"")
+        key = key.strip().removeprefix("export ").strip()
+        value = value.strip()
+        if value and value[0] in "'\"":
+            value = value[1:].split(value[0], 1)[0]
+        elif " #" in value:
+            value = value.split(" #", 1)[0].rstrip()
         if key and key not in os.environ:
             os.environ[key] = value
 
@@ -73,6 +81,11 @@ ACTION_BY_SEVERITY: dict[int, str] = {1: "toast", 2: "desk_buzzer", 3: "desk_buz
 
 # --- knowledge ---
 KNOWLEDGE_MAX_MATCHES = 3
+
+# --- input hardening ---
+MAX_SCREENSHOT_BYTES = 8_000_000  # skip larger; also bounds the sync read
+MAX_PROMPT_CHARS = 30_000  # truncate giant pastes (still roastable) past this
+AUDIO_KEY_LENGTH = 24  # sha256 hex prefix used for cache keys and /audio/{key}
 
 # --- classifier ---
 CLASSIFIER_MAX_TOKENS = 200

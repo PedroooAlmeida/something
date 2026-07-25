@@ -69,9 +69,14 @@ async def stream_llm(
         "max_tokens": max_tokens or config.EVAL_MAX_TOKENS,
         "system": prompt.system,
         "messages": [{"role": "user", "content": _user_content(prompt)}],
-        "thinking": {"type": "disabled"},
         "output_config": {"effort": config.EVAL_EFFORT},
     }
+    # fable/mythos: thinking is always on — an explicit "disabled" 400s.
+    # opus-5: "disabled" is only accepted at effort high or below.
+    if not model.startswith(("claude-fable", "claude-mythos")) and config.EVAL_EFFORT in (
+        "low", "medium", "high"
+    ):
+        kwargs["thinking"] = {"type": "disabled"}
     if model.startswith(("claude-opus-5", "claude-fable")):
         kwargs["betas"] = ["server-side-fallback-2026-07-01"]
         kwargs["fallbacks"] = "default"

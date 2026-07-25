@@ -6,6 +6,7 @@ import base64
 from pathlib import Path
 from typing import NamedTuple
 
+from gordon import config
 from gordon.schemas import CaptureEvent
 
 
@@ -16,6 +17,15 @@ class PromptBundle(NamedTuple):
     user_text: str
     image_b64: str | None = None
     image_media_type: str = "image/png"
+
+
+_IMAGE_MEDIA_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+}
 
 SYSTEM_PROMPT = """\
 You are Gordon, a merciless but fair coach who evaluates how well a developer used an AI coding tool, based on the prompt they typed. You score their usage, roast the bad decisions, and show them the better move.
@@ -98,11 +108,19 @@ def build_system_prompt(style_note: str) -> str:
 
 
 def build_user_message(event: CaptureEvent, knowledge_records: list[dict] | None = None) -> str:
+    prompt_text = event.prompt_text
+    if len(prompt_text) > config.MAX_PROMPT_CHARS:
+        # keep giant pastes roastable (they ARE the token_conservation case)
+        # without letting one request drain the context window
+        prompt_text = (
+            prompt_text[: config.MAX_PROMPT_CHARS]
+            + f"\n[... truncated by Gordon: {len(event.prompt_text)} chars total ...]"
+        )
     parts = [
         "Evaluate this AI-tool usage.",
         f"Application: {event.application or 'unknown'}",
         f"Model they selected: {event.selected_model}",
-        f'Their prompt:\n"""\n{event.prompt_text}\n"""',
+        f'Their prompt:\n"""\n{prompt_text}\n"""',
     ]
     if knowledge_records:
         lines = [KNOWLEDGE_HEADER]
@@ -122,10 +140,12 @@ def build_prompt(
 ) -> PromptBundle:
     """Provider-neutral prompt payload. Screenshot rides along as base64 image
     content when the file exists; a missing path is skipped, never an error."""
+    image_b64, media_type = _read_screenshot_b64(event.screenshot_path)
     return PromptBundle(
         system=build_system_prompt(style_note),
         user_text=build_user_message(event, knowledge_records),
-        image_b64=_read_screenshot_b64(event.screenshot_path),
+        image_b64=image_b64,
+        image_media_type=media_type,
     )
 
 
@@ -145,14 +165,22 @@ def context_for_safety(event: CaptureEvent, knowledge_records: list[dict] | None
     return build_user_message(event, knowledge_records)
 
 
-def _read_screenshot_b64(path: str | None) -> str | None:
+def _read_screenshot_b64(path: str | None) -> tuple[str | None, str]:
+    """Returns (b64, media_type). The path is client-supplied: only image
+    extensions are readable (no arbitrary local file ever reaches the model)
+    and oversized files are skipped, never an error."""
     if not path:
-        return None
+        return None, "image/png"
     p = Path(path)
-    if not p.exists() or not p.is_file():
-        return None
+    media_type = _IMAGE_MEDIA_TYPES.get(p.suffix.lower())
+    if media_type is None:
+        if p.suffix:
+            print(f"[rubric] screenshot rejected (not an image extension): {path}")
+        return None, "image/png"
     try:
-        return base64.b64encode(p.read_bytes()).decode("ascii")
+        if not p.is_file() or p.stat().st_size > config.MAX_SCREENSHOT_BYTES:
+            return None, "image/png"
+        return base64.b64encode(p.read_bytes()).decode("ascii"), media_type
     except OSError as exc:
         print(f"[rubric] screenshot unreadable, skipping: {exc}")
-        return None
+        return None, "image/png"

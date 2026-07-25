@@ -24,8 +24,15 @@ async def health() -> dict[str, object]:
 @app.post("/classify")
 async def classify(event: CaptureEvent) -> ClassifierVerdict:
     """Pre-gate: same CaptureEvent JSON as /evaluate; verdict on whether the
-    event deserves the full roast pipeline."""
-    return await classifier.classify(event)
+    event deserves the full roast pipeline. Never 500s — a broken classifier
+    defers to the full evaluation."""
+    try:
+        return await classifier.classify(event)
+    except Exception as exc:  # noqa: BLE001 — pre-gate must never block the pipeline
+        print(f"[api] classify failed, deferring to full evaluation: {exc}")
+        return ClassifierVerdict(
+            roastworthy=True, confidence=0.3, reason="Classifier unavailable; deferred to full evaluation."
+        )
 
 
 @app.post("/evaluate")
@@ -39,7 +46,7 @@ async def evaluate(event: CaptureEvent) -> EngineResponse:
 
 @app.get("/audio/{key}")
 async def audio(key: str) -> FileResponse:
-    if not key or set(key) - _HEX:
+    if len(key) != config.AUDIO_KEY_LENGTH or set(key) - _HEX:
         raise HTTPException(status_code=400, detail="bad audio key")
     # Synthesis may still be streaming when the overlay asks — wait briefly.
     path = await voice.wait_for_audio(key)
