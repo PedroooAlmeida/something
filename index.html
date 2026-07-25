@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Gordon — the AI coding coach that yells at you</title>
+<link rel="icon" type="image/svg+xml" href="gordon-favicon.svg" />
 <link rel="stylesheet" href="fonts.css" />
 <style>
   :root { color-scheme: dark; }
@@ -70,9 +71,21 @@
     max-width: 440px; margin-inline: auto;
   }
   .note a { color: oklch(0.72 0.1 210); }
+  .brand { position: fixed; top: 22px; left: 24px; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .brand span { font: 700 12px/1 'IBM Plex Mono', monospace; letter-spacing: .18em; color: oklch(0.86 0.012 268); }
+  @media (max-width: 520px) { .brand span { display: none; } }
 </style>
 </head>
 <body>
+  <a class="brand" href="./" aria-label="Gordon">
+    <svg viewBox="19 11 82 79" width="22" height="21.2" style="display:block">
+      <circle cx="38" cy="42" r="19" fill="#EDEEF2"></circle><circle cx="60" cy="33" r="22" fill="#EDEEF2"></circle><circle cx="82" cy="42" r="19" fill="#EDEEF2"></circle>
+      <rect x="30" y="46" width="60" height="26" fill="#EDEEF2"></rect>
+      <rect x="28" y="70" width="64" height="20" rx="6" fill="#EB8B3E"></rect>
+      <g fill="#15161C"><rect x="36" y="76" width="5" height="8" rx="2.5"></rect><rect x="46" y="73" width="5" height="14" rx="2.5"></rect><rect x="56" y="70.5" width="5" height="19" rx="2.5"></rect><rect x="66" y="74" width="5" height="12" rx="2.5"></rect><rect x="76" y="77" width="5" height="6" rx="2.5"></rect></g>
+    </svg>
+    <span>GORDON</span>
+  </a>
   <main>
     <div class="wave" id="wave" aria-hidden="true"></div>
     <div class="eyebrow">AI Coding Coach</div>
