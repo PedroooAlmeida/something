@@ -1,6 +1,6 @@
 # Gordon — the agent that watches *you* use agents
 
-Computer-use agents watch a screen and act on it. **Gordon is computer use in
+Agent watch a screen and act on it. **Gordon is computer use in
 reverse**: it watches your screen while *you* drive Cursor, Claude, or any AI
 coding tool — and coaches the one part no autocomplete fixes: **how you prompt**.
 
