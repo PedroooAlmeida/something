@@ -27,7 +27,11 @@ function loadDotEnv() {
 }
 loadDotEnv();
 
-const KITCHEN_PAGE = path.join(__dirname, '..', 'design_handoff_gordon_overlay', 'Gordon.dc.html');
+// The Kitchen lives in a sibling folder in dev; when packaged it's copied into
+// the app's resources (see electron-builder extraResources in package.json).
+const KITCHEN_PAGE = app.isPackaged
+  ? path.join(process.resourcesPath, 'design_handoff_gordon_overlay', 'Gordon.dc.html')
+  : path.join(__dirname, '..', 'design_handoff_gordon_overlay', 'Gordon.dc.html');
 const OVERLAY_PAGE = path.join(__dirname, 'overlay.html');
 
 // Stand-in prompt used when there's nothing on the clipboard — until the capture
