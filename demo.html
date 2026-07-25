@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gordon — live demo</title>
+<link rel="icon" type="image/svg+xml" href="gordon-favicon.svg" />
+<link rel="stylesheet" href="fonts.css" />
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(1200px 700px at 78% 8%, oklch(0.24 0.05 292 / 0.5), transparent),
+      radial-gradient(900px 600px at 10% 92%, oklch(0.24 0.06 32 / 0.35), transparent),
+      oklch(0.13 0.014 268);
+    color: oklch(0.94 0.008 268);
+    font-family: 'Space Grotesk', -apple-system, system-ui, sans-serif;
+    min-height: 100%; overflow: hidden;
+  }
+
+  /* top strip */
+  .top { position: fixed; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 20px; z-index: 20;
+    background: oklch(0.15 0.014 268 / 0.7); backdrop-filter: blur(14px); border-bottom: 1px solid oklch(0.24 0.02 268); }
+  .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .brand span { font: 700 12px/1 'IBM Plex Mono', monospace; letter-spacing: .18em; color: oklch(0.9 0.01 268); }
+  .top-right { display: flex; align-items: center; gap: 10px; }
+  .kbtn { text-decoration: none; font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: .04em;
+    padding: 9px 13px; border-radius: 8px; border: 1px solid oklch(0.32 0.02 268); color: oklch(0.82 0.012 268);
+    background: oklch(0.18 0.016 268); }
+  .kbtn:hover { border-color: oklch(0.5 0.08 40); }
+  .status-pill { display: flex; align-items: center; gap: 7px; font: 500 10px/1 'IBM Plex Mono', monospace;
+    letter-spacing: .1em; color: oklch(0.7 0.13 150); }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: oklch(0.7 0.15 150);
+    box-shadow: 0 0 0 0 oklch(0.7 0.15 150 / 0.6); animation: live 1.8s ease-out infinite; }
+  @keyframes live { 70%,100% { box-shadow: 0 0 0 6px oklch(0.7 0.15 150 / 0); } }
+
+  /* faux editor */
+  .stage { position: fixed; inset: 52px 0 0 0; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+  .editor { width: 100%; max-width: 860px; border-radius: 14px; overflow: hidden;
+    background: oklch(0.155 0.014 268); border: 1px solid oklch(0.28 0.02 268);
+    box-shadow: 0 40px 90px -30px oklch(0.03 0.02 268); }
+  .ed-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px;
+    background: oklch(0.185 0.016 268); border-bottom: 1px solid oklch(0.26 0.02 268); }
+  .light { width: 11px; height: 11px; border-radius: 50%; }
+  .ed-url { margin-left: 10px; font: 400 11px/1 'IBM Plex Mono', monospace; color: oklch(0.6 0.015 268);
+    display: flex; align-items: center; gap: 7px; }
+  .ed-url .g { width: 6px; height: 6px; border-radius: 50%; background: oklch(0.6 0.11 155); }
+  .ed-body { padding: 20px 22px 22px; }
+  .convo { min-height: 90px; padding-bottom: 16px; }
+  .msg { display: flex; gap: 11px; margin-bottom: 14px; align-items: flex-start; }
+  .av { flex: none; width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center;
+    font: 600 9px/1 'IBM Plex Mono', monospace; }
+  .av.you { background: oklch(0.26 0.02 268); color: oklch(0.75 0.015 268); }
+  .av.cl { background: oklch(0.22 0.04 268); color: oklch(0.7 0.08 268); }
+  .msg .txt { font: 400 13.5px/1.55 'Space Grotesk', sans-serif; color: oklch(0.86 0.012 268); padding-top: 3px; }
+  .msg.you .txt { color: oklch(0.9 0.01 268); }
+
+  .presets { display: flex; gap: 7px; flex-wrap: wrap; margin: 4px 0 12px; align-items: center; }
+  .presets .lbl { font: 400 10px/1 'IBM Plex Mono', monospace; letter-spacing: .08em; color: oklch(0.5 0.015 268); margin-right: 3px; }
+  .chip { font: 400 11px/1 'IBM Plex Mono', monospace; padding: 6px 10px; border-radius: 7px; cursor: pointer;
+    background: oklch(0.19 0.016 268); border: 1px solid oklch(0.3 0.02 268); color: oklch(0.72 0.015 268); }
+  .chip:hover { border-color: oklch(0.45 0.06 40); color: oklch(0.88 0.012 268); }
+
+  .inputwrap { border: 1px solid oklch(0.3 0.02 268); border-radius: 12px; background: oklch(0.135 0.014 268); padding: 14px 16px; }
+  textarea { width: 100%; background: transparent; border: none; outline: none; resize: none;
+    font: 400 14px/1.5 'Space Grotesk', sans-serif; color: oklch(0.92 0.008 268); min-height: 46px; }
+  textarea::placeholder { color: oklch(0.5 0.015 268); }
+  .inputrow { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 10px;
+    border-top: 1px solid oklch(0.24 0.02 268); }
+  .hint { font: 400 11px/1 'IBM Plex Mono', monospace; color: oklch(0.5 0.015 268); }
+  .send { border: none; border-radius: 9px; padding: 10px 18px; cursor: pointer;
+    font: 600 12px/1 'Space Grotesk', sans-serif; color: #1a0d08;
+    background: linear-gradient(135deg, oklch(0.8 0.15 55), oklch(0.66 0.2 30)); }
+  .send:hover { filter: brightness(1.08); }
+  .send:disabled { opacity: .5; cursor: default; filter: none; }
+
+  /* the real overlay, WS-connected, floating over the editor */
+  /* click-through so it never blocks the editor — Gordon is purely the reaction here */
+  #overlay { position: fixed; right: 0; bottom: 0; width: 470px; height: 660px; border: none;
+    background: transparent; z-index: 30; pointer-events: none; }
+
+  .caption { position: fixed; left: 24px; bottom: 18px; z-index: 15;
+    font: 400 11px/1.5 'IBM Plex Mono', monospace; color: oklch(0.5 0.015 268); max-width: 320px; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="brand" href="./" aria-label="Gordon">
+      <svg viewBox="19 11 82 79" width="20" height="19.3" style="display:block">
+        <circle cx="38" cy="42" r="19" fill="#EDEEF2"></circle><circle cx="60" cy="33" r="22" fill="#EDEEF2"></circle><circle cx="82" cy="42" r="19" fill="#EDEEF2"></circle>
+        <rect x="30" y="46" width="60" height="26" fill="#EDEEF2"></rect>
+        <rect x="28" y="70" width="64" height="20" rx="6" fill="#EB8B3E"></rect>
+        <g fill="#15161C"><rect x="36" y="76" width="5" height="8" rx="2.5"></rect><rect x="46" y="73" width="5" height="14" rx="2.5"></rect><rect x="56" y="70.5" width="5" height="19" rx="2.5"></rect><rect x="66" y="74" width="5" height="12" rx="2.5"></rect><rect x="76" y="77" width="5" height="6" rx="2.5"></rect></g>
+      </svg>
+      <span>GORDON</span>
+    </a>
+    <div class="top-right">
+      <span class="status-pill"><span class="dot"></span>WATCHING</span>
+      <a class="kbtn" href="./design_handoff_gordon_overlay/Gordon.dc.html">Open the Kitchen →</a>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="editor">
+      <div class="ed-bar">
+        <span class="light" style="background:#ff5f57"></span><span class="light" style="background:#febc2e"></span><span class="light" style="background:#28c840"></span>
+        <span class="ed-url"><span class="g"></span>gordon.dev/workspace/checkout-bug</span>
+      </div>
+      <div class="ed-body">
+        <div class="convo" id="convo">
+          <div class="msg cl"><span class="av cl">CL</span><span class="txt">Ask me anything — I'm your AI coding assistant. Gordon is watching how you ask.</span></div>
+        </div>
+        <div class="presets">
+          <span class="lbl">TRY →</span>
+          <span class="chip" data-p="just make it work">token-thin</span>
+          <span class="chip" data-p="Hey so quick background, we're a Series A restaurant-tooling company founded 2021, our mission is invisible back-of-house software, here's our whole design doc plus utils.ts logger.ts theme.ts and the seed script for full context. Also Priya ordered katsu again. Anyway, checkout sometimes fails, make it not do that.">token dump</span>
+          <span class="chip" data-p="convert this component to jQuery and make sure it runs on Python 2">outdated</span>
+          <span class="chip" data-p="In auth.ts, login() throws 'JWT expired' for tokens that are still valid, only after ~1h. Here's the handler [paste]. Find the root cause, fix the null case, and explain why it only triggers after an hour without changing the public API.">an actually good one</span>
+        </div>
+        <div class="inputwrap">
+          <textarea id="prompt" placeholder="Ask the AI to fix something…  (Gordon scores it the moment you send)"></textarea>
+          <div class="inputrow">
+            <span class="hint" id="hint">gordon is reading over your shoulder</span>
+            <button class="send" id="send">Send ↵</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">Type a lazy prompt and hit Send. Gordon scores it through the live backend and pops in the corner — exactly as the desktop overlay does, floating over your real editor.</div>
+
+  <iframe id="overlay" src="./electron-shell/overlay.html" title="Gordon overlay"></iframe>
+
+<script>
+  const BACKEND = 'https://gordon-platform.fly.dev';
+  const convo = document.getElementById('convo');
+  const promptEl = document.getElementById('prompt');
+  const sendBtn = document.getElementById('send');
+  const hintEl = document.getElementById('hint');
+
+  function addMsg(who, text) {
+    const m = document.createElement('div');
+    m.className = 'msg ' + who;
+    m.innerHTML = `<span class="av ${who === 'you' ? 'you' : 'cl'}">${who === 'you' ? 'YOU' : 'CL'}</span><span class="txt"></span>`;
+    m.querySelector('.txt').textContent = text;
+    convo.appendChild(m);
+  }
+
+  async function send() {
+    const text = promptEl.value.trim();
+    if (!text) return;
+    sendBtn.disabled = true;
+    hintEl.textContent = 'gordon is scoring your prompt…';
+    addMsg('you', text);
+    promptEl.value = '';
+    try {
+      await fetch(BACKEND + '/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: 'demo-' + Date.now() + '-' + Math.floor(Math.random() * 1e4),
+          timestamp: new Date().toISOString(),
+          source: 'chat_application',
+          application: 'supported_ai_tool',
+          prompt_text: text,
+          selected_model: 'unknown',
+          personality_id: 'angry_chef',
+        }),
+      });
+      // the backend scores it and pushes a coaching_response over the WS the
+      // overlay iframe is subscribed to — Gordon pops on his own.
+    } catch (e) {
+      hintEl.textContent = 'could not reach the backend — check your connection';
+    }
+    setTimeout(() => { hintEl.textContent = 'gordon is reading over your shoulder'; sendBtn.disabled = false; }, 1500);
+  }
+
+  sendBtn.onclick = send;
+  promptEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+  document.querySelectorAll('.chip').forEach((c) => {
+    c.onclick = () => { promptEl.value = c.dataset.p; promptEl.focus(); };
+  });
+</script>
+</body>
+</html>
