@@ -54,6 +54,21 @@ class Evaluation(BaseModel):
         return v
 
 
+class ClassifierVerdict(BaseModel):
+    """POST /classify output — pre-gate deciding whether an event deserves the
+    full roast pipeline."""
+
+    roastworthy: bool
+    confidence: float = Field(ge=0.0, le=1.0)
+    reason: str
+    category_hint: str | None = None
+
+    @field_validator("category_hint")
+    @classmethod
+    def known_or_none(cls, v: str | None) -> str | None:
+        return v if v in CATEGORIES else None
+
+
 class TimingMs(BaseModel):
     roast_ready: int
     total: int

@@ -7,8 +7,8 @@ import string
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
-from gordon import config, engine, voice
-from gordon.schemas import CaptureEvent, EngineResponse
+from gordon import classifier, config, engine, voice
+from gordon.schemas import CaptureEvent, ClassifierVerdict, EngineResponse
 
 app = FastAPI(title="Gordon Engine", version="0.1.0")
 
@@ -19,6 +19,13 @@ _HEX = set(string.hexdigits)
 @app.get("/health")
 async def health() -> dict[str, object]:
     return {"status": "ok", "config": config.health_status()}
+
+
+@app.post("/classify")
+async def classify(event: CaptureEvent) -> ClassifierVerdict:
+    """Pre-gate: same CaptureEvent JSON as /evaluate; verdict on whether the
+    event deserves the full roast pipeline."""
+    return await classifier.classify(event)
 
 
 @app.post("/evaluate")

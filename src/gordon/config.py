@@ -73,6 +73,10 @@ ACTION_BY_SEVERITY: dict[int, str] = {1: "toast", 2: "desk_buzzer", 3: "desk_buz
 # --- knowledge ---
 KNOWLEDGE_MAX_MATCHES = 3
 
+# --- classifier ---
+CLASSIFIER_MAX_TOKENS = 200
+CLASSIFIER_MIN_PROMPT_CHARS = 2
+
 # --- harness ---
 HARNESS_CONCURRENCY = 8
 
