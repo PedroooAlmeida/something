@@ -54,6 +54,10 @@ Two options (pick one):
 2. **Push:** `POST /api/evaluations/{event_id}` with a finished evaluation for an event
    we already stored.
 
+Evaluation extras: `action` is one of `none | smart_light | desk_buzzer | bell_bot`
+(lamp fires at severity ≥ 1, buzzer ≥ 2, bell-bot = 3), and frontier verdicts carry a
+structured `source: {text, date, confidence, url}` for the overlay's knowledge card.
+
 ### Person 1 — overlay + dashboard
 - Connect a WebSocket to `ws://127.0.0.1:8765/ws/overlay`. Every scored prompt arrives as
   `{"type": "coaching_response", "event": {...}, "evaluation": {...}}`.

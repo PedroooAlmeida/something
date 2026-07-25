@@ -14,6 +14,14 @@ class CaptureEvent(BaseModel):
     session_id: str = "default-session"
 
 
+class SourceRef(BaseModel):
+    """Frontier-knowledge citation for the overlay's source card."""
+    text: str
+    date: str
+    confidence: str = "unverified"
+    url: str
+
+
 class Evaluation(BaseModel):
     """What the intelligence engine (Person 3) returns."""
     overall_score: int = Field(ge=0, le=100)
@@ -24,7 +32,8 @@ class Evaluation(BaseModel):
     lesson: str
     improved_prompt: str
     severity: int = Field(ge=0, le=3, default=0)
-    action: str = "none"
+    action: str = "none"   # none | smart_light | desk_buzzer | bell_bot
+    source: SourceRef | None = None
 
 
 class WebhookRegistration(BaseModel):

@@ -19,9 +19,10 @@ CATEGORY_LABELS = {
 
 
 def _kitchen_rating(avg_score: float) -> dict:
+    # brigade ranks per the overlay's Kitchen rating card ("Line Cook" -> "Chef de Partie")
     stars = max(1, min(5, 1 + round(avg_score / 25)))
-    labels = {1: "Health-code violation", 2: "Greasy spoon", 3: "Passable bistro",
-              4: "Solid brigade", 5: "Michelin-grade prompting"}
+    labels = {1: "Dishwasher", 2: "Commis", 3: "Line Cook",
+              4: "Chef de Partie", 5: "Head Chef"}
     return {"stars": stars, "label": labels[stars]}
 
 
@@ -66,7 +67,25 @@ def summary() -> dict:
     best = max(scored, key=scored.get) if scored else None
     worst = min(scored, key=scored.get) if scored else None
 
+    # 14-day violation counts per category — the Kitchen's "category tracking"
+    # bars are hit counts (high = bad), not score averages
+    hit_rows = db.rows("""
+        SELECT primary_category, COUNT(*) n FROM evaluations
+        WHERE severity >= 1 AND created_at >= datetime('now', '-14 days')
+        GROUP BY primary_category
+    """)
+    category_hits = {c: 0 for c in CATEGORIES}
+    category_hits.update({r["primary_category"]: r["n"] for r in hit_rows
+                          if r["primary_category"] in category_hits})
+    worst_by_hits = max(category_hits, key=category_hits.get) if any(category_hits.values()) else None
+
     return {
+        "category_hits_14d": category_hits,
+        "worst_category_by_hits": {
+            "category": CATEGORY_LABELS.get(worst_by_hits),
+            "hits": category_hits[worst_by_hits],
+            "window_days": 14,
+        } if worst_by_hits else None,
         "total_interruptions": total,
         "interruptions_today": today,
         "interruptions_yesterday": yesterday,

@@ -176,13 +176,14 @@ def _improved_prompt(p: str, category: str) -> str:
 
 
 def _severity_and_action(overall: int) -> tuple[int, str]:
+    # action union per overlay contract: none | smart_light | desk_buzzer | bell_bot
     if overall >= 75:
         return 0, "none"
     if overall >= 55:
-        return 1, "overlay_animation"
+        return 1, "smart_light"
     if overall >= 35:
         return 2, "desk_buzzer"
-    return 3, "desk_buzzer"
+    return 3, "bell_bot"
 
 
 def mock_evaluate(event: dict) -> dict:
@@ -215,10 +216,12 @@ def mock_evaluate(event: dict) -> dict:
             "improved_prompt": p,
             "severity": 0,
             "action": "none",
+            "source": None,
         }
 
     words = len(p.split())
     roast_template = ROASTS[primary][words % len(ROASTS[primary])]
+    source = None
     if primary == "frontier_awareness" and frontier_hit:
         roast = roast_template.format(
             prev=frontier_hit.get("previous_option") or "that",
@@ -227,13 +230,21 @@ def mock_evaluate(event: dict) -> dict:
             year="2023",
         )
         diagnosis = (f"{DIAGNOSES[primary]} {frontier_hit.get('previous_option')} -> "
-                     f"{frontier_hit.get('new_option')} ({frontier_hit.get('release_date')}). "
-                     f"Source: {frontier_hit.get('source')}")
+                     f"{frontier_hit.get('new_option')}.")
+        # structured source for the overlay's Frontier Knowledge card —
+        # it never renders a claim without source + date
+        source = {
+            "text": frontier_hit.get("what_changed") or "",
+            "date": frontier_hit.get("release_date") or "",
+            "confidence": frontier_hit.get("confidence") or "unverified",
+            "url": frontier_hit.get("source") or "",
+        }
     else:
         roast = roast_template.format(prompt=p[:60], words=words)
         diagnosis = DIAGNOSES[primary]
 
     return {
+        "source": source,
         "overall_score": overall,
         "primary_category": primary,
         "category_scores": scores,

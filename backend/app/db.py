@@ -83,6 +83,10 @@ def conn():
 def init_db():
     with conn() as c:
         c.executescript(SCHEMA)
+        # migration: structured frontier-source citation on evaluations
+        cols = [r["name"] for r in c.execute("PRAGMA table_info(evaluations)")]
+        if "source" not in cols:
+            c.execute("ALTER TABLE evaluations ADD COLUMN source TEXT")
 
 
 def get_setting(key: str, default: str | None = None) -> str | None:
@@ -115,12 +119,13 @@ def insert_evaluation(event_id: str, ev: dict, engine: str):
     with conn() as c:
         c.execute(
             "INSERT OR REPLACE INTO evaluations(event_id,overall_score,primary_category,"
-            "category_scores,roast,diagnosis,lesson,improved_prompt,severity,action,engine) "
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            "category_scores,roast,diagnosis,lesson,improved_prompt,severity,action,engine,source) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
             (event_id, ev["overall_score"], ev["primary_category"],
              json.dumps(ev["category_scores"]), ev.get("roast"), ev.get("diagnosis"),
              ev.get("lesson"), ev.get("improved_prompt"), ev.get("severity", 0),
-             ev.get("action"), engine),
+             ev.get("action"), engine,
+             json.dumps(ev["source"]) if ev.get("source") else None),
         )
 
 

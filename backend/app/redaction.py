@@ -18,10 +18,13 @@ def redact(text: str | None) -> tuple[str, list[str]]:
     for kind, pattern in PATTERNS:
         if pattern.search(text):
             applied.append(kind)
+            # placeholder format matches the overlay's redaction preview:
+            # "████ [redacted: api_key]" / "[redacted: pii]"
+            label = "pii" if kind in ("email", "credit_card") else "api_key" if kind in ("api_key", "bearer_token") else kind
             if kind == "bearer_token":
-                text = pattern.sub(r"\1[REDACTED]", text)
+                text = pattern.sub(rf"\1████████ [redacted: {label}]", text)
             elif kind == "password_assignment":
-                text = pattern.sub(lambda m: re.split(r"[:=]", m.group(0), maxsplit=1)[0] + ": [REDACTED]", text)
+                text = pattern.sub(lambda m: re.split(r"[:=]", m.group(0), maxsplit=1)[0] + f": ████████ [redacted: {label}]", text)
             else:
-                text = pattern.sub(f"[REDACTED_{kind.upper()}]", text)
+                text = pattern.sub(f"████████ [redacted: {label}]", text)
     return text, applied
