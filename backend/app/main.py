@@ -14,10 +14,20 @@ import json
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+import base64
+import os
+import re as _re
+
 from . import actions, db, evaluator, knowledge, progress
 from .models import (CaptureEvent, Evaluation, KnowledgeUpdate,
-                     RssImportRequest, WebhookRegistration)
+                     RssImportRequest, ScreenshotUpload, WebhookRegistration,
+                     WebhookUpdate)
 from .redaction import redact
+
+SCREENSHOT_DIR = os.environ.get(
+    "GORDON_SCREENSHOTS",
+    os.path.join(os.path.dirname(db.DB_PATH), "screenshots"),
+)
 
 app = FastAPI(title="Gordon Platform Service", version="0.1.0")
 
@@ -85,14 +95,16 @@ def monitoring_status():
 
 
 @app.post("/api/monitoring/pause")
-def monitoring_pause():
+async def monitoring_pause():
     db.set_setting("paused", "1")
+    await hub.broadcast({"type": "monitoring", "paused": True})
     return {"paused": True}
 
 
 @app.post("/api/monitoring/resume")
-def monitoring_resume():
+async def monitoring_resume():
     db.set_setting("paused", "0")
+    await hub.broadcast({"type": "monitoring", "paused": False})
     return {"paused": False}
 
 
@@ -228,6 +240,25 @@ def webhooks_add(reg: WebhookRegistration):
     return {"id": new_id}
 
 
+@app.patch("/api/webhooks/{hook_id}")
+def webhooks_update(hook_id: int, upd: WebhookUpdate):
+    hook = db.one("SELECT * FROM webhooks WHERE id=?", (hook_id,))
+    if not hook:
+        raise HTTPException(404, "unknown webhook id")
+    fields = {
+        "enabled": int(upd.enabled) if upd.enabled is not None else None,
+        "min_severity": upd.min_severity,
+        "categories": json.dumps(upd.categories) if upd.categories is not None else None,
+        "name": upd.name,
+        "url": upd.url,
+    }
+    sets = {k: v for k, v in fields.items() if v is not None}
+    if sets:
+        db.execute(f"UPDATE webhooks SET {', '.join(f'{k}=?' for k in sets)} WHERE id=?",
+                   (*sets.values(), hook_id))
+    return {"updated": hook_id, "fields": list(sets)}
+
+
 @app.delete("/api/webhooks/{hook_id}")
 def webhooks_delete(hook_id: int):
     db.execute("DELETE FROM webhooks WHERE id=?", (hook_id,))
@@ -244,11 +275,49 @@ async def actions_test(category: str = "token_conservation", severity: int = 2,
     return {"fired": True}
 
 
+# --------------------------------------------------------------- screenshots --
+@app.post("/api/screenshots")
+def screenshot_upload(up: ScreenshotUpload):
+    """Cross-machine screenshot handoff for Person 2. PRD 22: not persisted by
+    default — kept only until the event is evaluated or history is deleted."""
+    if not _re.fullmatch(r"[\w-]+", up.event_id):
+        raise HTTPException(422, "bad event_id")
+    try:
+        blob = base64.b64decode(up.image_base64, validate=True)
+    except Exception:
+        raise HTTPException(422, "image_base64 is not valid base64")
+    if len(blob) > 8_000_000:
+        raise HTTPException(413, "screenshot too large (8MB max)")
+    os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+    path = os.path.join(SCREENSHOT_DIR, f"{up.event_id}.png")
+    with open(path, "wb") as f:
+        f.write(blob)
+    return {"screenshot_path": f"/api/screenshots/{up.event_id}"}
+
+
+@app.get("/api/screenshots/{event_id}")
+def screenshot_get(event_id: str):
+    if not _re.fullmatch(r"[\w-]+", event_id):
+        raise HTTPException(422, "bad event_id")
+    path = os.path.join(SCREENSHOT_DIR, f"{event_id}.png")
+    if not os.path.exists(path):
+        raise HTTPException(404, "no screenshot for this event")
+    from fastapi.responses import FileResponse
+    return FileResponse(path, media_type="image/png")
+
+
 # -------------------------------------------------------------------- privacy --
 @app.delete("/api/history")
 def delete_history():
-    """One-click 'delete my history' (PRD 22). Keeps knowledge + webhooks."""
+    """One-click 'delete my history' (PRD 22). Keeps knowledge + webhooks.
+    Also removes any stored screenshots."""
     with db.conn() as c:
         events = c.execute("DELETE FROM events").rowcount
         evals = c.execute("DELETE FROM evaluations").rowcount
-    return {"deleted_events": events, "deleted_evaluations": evals}
+    shots = 0
+    if os.path.isdir(SCREENSHOT_DIR):
+        for name in os.listdir(SCREENSHOT_DIR):
+            os.remove(os.path.join(SCREENSHOT_DIR, name))
+            shots += 1
+    return {"deleted_events": events, "deleted_evaluations": evals,
+            "deleted_screenshots": shots}

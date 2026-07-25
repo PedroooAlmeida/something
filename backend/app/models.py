@@ -59,6 +59,19 @@ class KnowledgeUpdate(BaseModel):
     confidence: str = "seeded-demo"
 
 
+class WebhookUpdate(BaseModel):
+    enabled: bool | None = None
+    min_severity: int | None = None
+    categories: list[str] | None = None
+    name: str | None = None
+    url: str | None = None
+
+
+class ScreenshotUpload(BaseModel):
+    event_id: str
+    image_base64: str        # png/jpeg bytes, base64-encoded
+
+
 class RssImportRequest(BaseModel):
     url: str
     product: str | None = None      # override product name; defaults to feed title
