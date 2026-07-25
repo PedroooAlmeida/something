@@ -12,6 +12,7 @@ class CaptureEvent(BaseModel):
     selected_model: str = "unknown"
     screenshot_path: str | None = None
     session_id: str = "default-session"
+    personality_id: str = "angry_chef"
 
 
 class SourceRef(BaseModel):
@@ -23,7 +24,10 @@ class SourceRef(BaseModel):
 
 
 class Evaluation(BaseModel):
-    """What the intelligence engine (Person 3) returns."""
+    """What the intelligence engine (Person 3) returns. Extra fields (audio_url,
+    voice_id, timing_ms, ...) are kept and forwarded to the overlay untouched."""
+    model_config = {"extra": "allow"}
+
     overall_score: int = Field(ge=0, le=100)
     primary_category: str
     category_scores: dict[str, int]
@@ -34,6 +38,7 @@ class Evaluation(BaseModel):
     severity: int = Field(ge=0, le=3, default=0)
     action: str = "none"   # none | smart_light | desk_buzzer | bell_bot
     source: SourceRef | None = None
+    should_interrupt: bool | None = None   # engine emits this instead of severity 0
 
 
 class WebhookRegistration(BaseModel):

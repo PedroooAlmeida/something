@@ -49,8 +49,10 @@ paused, returns `{"status": "paused", "evaluated": false}` — nothing is stored
 
 ### Person 3 — intelligence engine
 Two options (pick one):
-1. **Pull (preferred):** expose `POST /evaluate` taking the capture event and returning
-   the evaluation JSON; we set `GORDON_ENGINE_URL` to it.
+1. **Pull (preferred):** we set `GORDON_ENGINE_URL=<engine>/evaluate` and forward each
+   capture event (incl. `personality_id`). Engine's `should_interrupt=false` is
+   normalized to severity 0 backend-side; extra fields (`audio_url`, `voice_id`,
+   `timing_ms`, ...) pass through to the overlay untouched.
 2. **Push:** `POST /api/evaluations/{event_id}` with a finished evaluation for an event
    we already stored.
 

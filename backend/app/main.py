@@ -97,9 +97,20 @@ def monitoring_resume():
 
 
 # -------------------------------------------------------------- event intake --
+def _normalize(evaluation: dict) -> dict:
+    """Person 3's engine never emits severity 0 — 'leave the user alone' is
+    should_interrupt=False. Normalize so severity 0 == no violation everywhere
+    downstream (actions, interruption counts)."""
+    if evaluation.get("should_interrupt") is False:
+        evaluation["severity"] = 0
+        evaluation["action"] = "none"
+    return evaluation
+
+
 async def _process(event: dict) -> dict:
     """Score -> store -> push to overlay -> fire actions. Returns the evaluation."""
     evaluation, engine = await asyncio.to_thread(evaluator.evaluate, event)
+    evaluation = _normalize(evaluation)
     db.insert_evaluation(event["event_id"], evaluation, engine)
 
     await hub.broadcast({"type": "coaching_response", "event": event, "evaluation": evaluation})
@@ -134,7 +145,7 @@ async def receive_evaluation(event_id: str, evaluation: Evaluation):
     event = db.one("SELECT * FROM events WHERE event_id=?", (event_id,))
     if not event:
         raise HTTPException(404, "unknown event_id — POST /api/events first")
-    ev = evaluation.model_dump()
+    ev = _normalize(evaluation.model_dump())
     db.insert_evaluation(event_id, ev, "remote-push")
     await hub.broadcast({"type": "coaching_response", "event": event, "evaluation": ev})
     if ev["severity"] >= 1:

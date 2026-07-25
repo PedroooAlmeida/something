@@ -87,6 +87,9 @@ def init_db():
         cols = [r["name"] for r in c.execute("PRAGMA table_info(evaluations)")]
         if "source" not in cols:
             c.execute("ALTER TABLE evaluations ADD COLUMN source TEXT")
+        ecols = [r["name"] for r in c.execute("PRAGMA table_info(events)")]
+        if "personality_id" not in ecols:
+            c.execute("ALTER TABLE events ADD COLUMN personality_id TEXT DEFAULT 'angry_chef'")
 
 
 def get_setting(key: str, default: str | None = None) -> str | None:
@@ -108,10 +111,11 @@ def insert_event(e: dict):
     with conn() as c:
         c.execute(
             "INSERT OR REPLACE INTO events(event_id,timestamp,source,application,"
-            "prompt_text,selected_model,screenshot_path,session_id) VALUES(?,?,?,?,?,?,?,?)",
+            "prompt_text,selected_model,screenshot_path,session_id,personality_id) "
+            "VALUES(?,?,?,?,?,?,?,?,?)",
             (e["event_id"], e["timestamp"], e.get("source"), e.get("application"),
              e.get("prompt_text"), e.get("selected_model"), e.get("screenshot_path"),
-             e.get("session_id")),
+             e.get("session_id"), e.get("personality_id", "angry_chef")),
         )
 
 

@@ -217,6 +217,8 @@ def mock_evaluate(event: dict) -> dict:
             "severity": 0,
             "action": "none",
             "source": None,
+            "should_interrupt": False,
+            "personality_id": event.get("personality_id", "angry_chef"),
         }
 
     words = len(p.split())
@@ -245,6 +247,8 @@ def mock_evaluate(event: dict) -> dict:
 
     return {
         "source": source,
+        "should_interrupt": severity >= 1,
+        "personality_id": event.get("personality_id", "angry_chef"),
         "overall_score": overall,
         "primary_category": primary,
         "category_scores": scores,
