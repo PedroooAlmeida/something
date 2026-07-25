@@ -4,6 +4,9 @@
 # audio cache
 audio_cache/
 
+# capture events (Person 2 emitter output)
+roast_events/
+
 # python
 __pycache__/
 *.pyc
