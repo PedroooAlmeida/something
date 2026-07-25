@@ -8,8 +8,7 @@
     "dist": "electron-builder --mac"
   },
   "devDependencies": {
-    "electron": "^31.7.7",
-    "electron-builder": "^25.1.8"
+    "electron": "^31.7.7"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0"
@@ -17,12 +16,25 @@
   "build": {
     "appId": "com.gordon.coach",
     "productName": "Gordon",
-    "files": ["main.js", "preload.js", "overlay.html", "fonts.css", "scorer.js", "verdict-contract.js"],
+    "files": [
+      "main.js",
+      "preload.js",
+      "overlay.html",
+      "fonts.css",
+      "scorer.js",
+      "verdict-contract.js"
+    ],
     "extraResources": [
-      { "from": "../design_handoff_gordon_overlay", "to": "design_handoff_gordon_overlay" }
+      {
+        "from": "../design_handoff_gordon_overlay",
+        "to": "design_handoff_gordon_overlay"
+      }
     ],
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "identity": null,
       "category": "public.app-category.developer-tools"
     }
