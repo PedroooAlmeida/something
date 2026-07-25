@@ -1,0 +1,82 @@
+[
+  {
+    "product": "Anthropic Claude",
+    "what_changed": "Claude Fable 5 released — new top-tier model above Opus with larger context and stronger coding/tool use",
+    "release_date": "2026-07-20",
+    "source": "https://www.anthropic.com/news/claude-fable-5-mythos-5",
+    "previous_option": "claude-3-opus",
+    "new_option": "claude-fable-5",
+    "why_it_matters": "Older Claude 3 models are several generations behind on coding, tool calling, and context window.",
+    "confidence": "seeded-demo"
+  },
+  {
+    "product": "OpenAI GPT",
+    "what_changed": "gpt-3.5-turbo is legacy; current models are substantially better at code and support larger contexts",
+    "release_date": "2025-11-04",
+    "source": "https://platform.openai.com/docs/models",
+    "previous_option": "gpt-3.5",
+    "new_option": "the current GPT flagship",
+    "why_it_matters": "Legacy models hallucinate more on code and lack modern tool-calling support.",
+    "confidence": "seeded-demo"
+  },
+  {
+    "product": "React",
+    "what_changed": "React 19 stable — Actions, use() hook, and the compiler remove most manual memoization",
+    "release_date": "2024-12-05",
+    "source": "https://react.dev/blog/2024/12/05/react-19",
+    "previous_option": "react 18",
+    "new_option": "react 19",
+    "why_it_matters": "Hand-written useMemo/useCallback plumbing is largely obsolete with the React compiler.",
+    "confidence": "seeded-demo"
+  },
+  {
+    "product": "Create React App",
+    "what_changed": "CRA is deprecated; the React team recommends Vite or a framework (Next.js, Remix)",
+    "release_date": "2025-02-14",
+    "source": "https://react.dev/blog/2025/02/14/sunsetting-create-react-app",
+    "previous_option": "create-react-app",
+    "new_option": "Vite",
+    "why_it_matters": "CRA receives no updates; Vite dev server starts in milliseconds instead of tens of seconds.",
+    "confidence": "seeded-demo"
+  },
+  {
+    "product": "Node.js",
+    "what_changed": "Node 16/18 are end-of-life; Node 22 is the active LTS with built-in watch mode, test runner, and fetch",
+    "release_date": "2025-04-30",
+    "source": "https://nodejs.org/en/about/previous-releases",
+    "previous_option": "node 16",
+    "new_option": "node 22",
+    "why_it_matters": "EOL Node versions get no security patches, and the built-in test runner removes a dependency.",
+    "confidence": "seeded-demo"
+  },
+  {
+    "product": "Moment.js",
+    "what_changed": "Moment.js is in maintenance mode; its own docs recommend alternatives",
+    "release_date": "2020-09-15",
+    "source": "https://momentjs.com/docs/#/-project-status/",
+    "previous_option": "moment.js",
+    "new_option": "date-fns or the built-in Temporal API",
+    "why_it_matters": "Moment is large, mutable, and frozen; Temporal is now landing in browsers natively.",
+    "confidence": "seeded-demo"
+  },
+  {
+    "product": "Python",
+    "what_changed": "Python 3.14 released with free-threaded (no-GIL) builds officially supported",
+    "release_date": "2025-10-07",
+    "source": "https://docs.python.org/3.14/whatsnew/3.14.html",
+    "previous_option": "python 3.9",
+    "new_option": "python 3.14",
+    "why_it_matters": "3.9 is near end-of-life; modern typing syntax and big interpreter speedups came after it.",
+    "confidence": "seeded-demo"
+  },
+  {
+    "product": "OpenAI API",
+    "what_changed": "Completions-style prompting is legacy; structured outputs with JSON schema are the reliable way to get parseable results",
+    "release_date": "2024-08-06",
+    "source": "https://platform.openai.com/docs/guides/structured-outputs",
+    "previous_option": "text-davinci-003",
+    "new_option": "structured outputs on current models",
+    "why_it_matters": "Regex-parsing free-text model output is a bug factory when a schema-constrained mode exists.",
+    "confidence": "seeded-demo"
+  }
+]

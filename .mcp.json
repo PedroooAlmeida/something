@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "gordon": {
+      "command": "backend/.venv/bin/python",
+      "args": ["backend/gordon_mcp.py"],
+      "env": {
+        "GORDON_API_BASE": "https://gordon-platform.fly.dev"
+      }
+    }
+  }
+}
