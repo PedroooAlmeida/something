@@ -17,6 +17,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import base64
 import os
 import re as _re
+from pathlib import Path
+
+from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import actions, db, evaluator, knowledge, progress
 from .models import (CaptureEvent, Evaluation, KnowledgeUpdate,
@@ -341,3 +345,28 @@ def delete_history():
             shots += 1
     return {"deleted_events": events, "deleted_evaluations": evals,
             "deleted_screenshots": shots}
+
+
+# ------------------------------------------------------------- static site --
+# Serve the landing page + browser demo same-origin so /api and audio work
+# from a plain `./start.sh` with no separate web server. Only allowlisted
+# paths — NEVER mount the repo root (it contains .env).
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_SITE_FILES = {"index.html", "fonts.css", "gordon-favicon.svg"}
+
+for _d in ("design_handoff_gordon_overlay", "logo"):
+    _p = _REPO_ROOT / _d
+    if _p.is_dir():
+        app.mount(f"/site/{_d}", StaticFiles(directory=_p, html=True), name=_d)
+
+
+@app.get("/", include_in_schema=False)
+def _root():
+    return RedirectResponse("/site/index.html")
+
+
+@app.get("/site/{name}", include_in_schema=False)
+def _site_file(name: str):
+    if name not in _SITE_FILES:
+        raise HTTPException(status_code=404)
+    return FileResponse(_REPO_ROOT / name)

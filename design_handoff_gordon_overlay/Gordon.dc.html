@@ -639,7 +639,14 @@ class Component extends DCLogic {
     catHits: null, dailyText: null, trendData: null
   };
 
-  API = "https://gordon-platform.fly.dev";
+  // Backend base URL, in priority order: ?api= query param -> saved override ->
+  // same origin when served by the local backend (./start.sh, localhost) ->
+  // hosted platform (GitHub Pages / file:// fallback).
+  API = new URLSearchParams(location.search).get("api")
+     || localStorage.GORDON_API
+     || (/^https?:\/\/(localhost|127\.)/.test(location.origin)
+           ? location.origin
+           : "https://gordon-platform.fly.dev");
   async componentDidMount() {
     try {
       const [sum, daily, hist, events] = await Promise.all([

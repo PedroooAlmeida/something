@@ -132,6 +132,7 @@ fi
 
 # ---------- ready ----------
 say_step "READY"
+echo "  web      http://127.0.0.1:$BACKEND_PORT/          (landing + browser demo)"
 echo "  engine   http://127.0.0.1:$ENGINE_PORT/health"
 echo "  backend  http://127.0.0.1:$BACKEND_PORT/docs"
 echo "  demo events:  backend/.venv/bin/python backend/scripts/send_mock_events.py"

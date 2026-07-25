@@ -12,6 +12,7 @@ Both return the shared evaluation format from PRD section 17.
 import json
 import os
 import re
+import urllib.parse
 import urllib.request
 
 from . import db
@@ -272,7 +273,14 @@ def evaluate(event: dict) -> tuple[dict, str]:
                 method="POST",
             )
             with urllib.request.urlopen(req, timeout=ENGINE_TIMEOUT) as resp:
-                return json.loads(resp.read().decode()), "remote"
+                data = json.loads(resp.read().decode())
+                # engine returns a relative /audio/{key}; browsers and the
+                # overlay need it absolute against the engine host
+                url = data.get("audio_url") or ""
+                if url.startswith("/"):
+                    parts = urllib.parse.urlsplit(ENGINE_URL)
+                    data["audio_url"] = f"{parts.scheme}://{parts.netloc}{url}"
+                return data, "remote"
         except Exception as exc:  # engine down mid-demo -> keep the show running
             print(f"[evaluator] remote engine failed ({exc}); using mock fallback")
     return mock_evaluate(event), "mock"
