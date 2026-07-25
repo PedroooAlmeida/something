@@ -19,6 +19,10 @@ npm-debug.log
 # capture events (Person 2 emitter output)
 roast_events/
 
+# start.sh service logs
+.demo-logs/
+.venv-capture/
+
 # audio cache
 audio_cache/
 
