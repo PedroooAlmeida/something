@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="icon" type="image/svg+xml" href="gordon-favicon.svg">
+<link rel="stylesheet" href="fonts.css">
+<style>
+html,body{margin:0;padding:0;background:oklch(0.13 0.014 268);color:oklch(0.94 0.008 268);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:oklch(0.72 0.17 48);text-decoration:none}
+a:hover{color:oklch(0.82 0.15 48)}
+button{font-family:inherit}
+textarea,input{font-family:inherit}
+::selection{background:oklch(0.72 0.17 48 / 0.32)}
+@keyframes gwave{from{transform:scaleY(0.35)}to{transform:scaleY(1)}}
+@keyframes gpop{from{opacity:0;transform:translateY(26px) scale(0.965)}to{opacity:1;transform:none}}
+@keyframes gfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes gpulse{0%,100%{opacity:1}50%{opacity:0.25}}
+@keyframes gshake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-1px)}80%{transform:translate(2px,1px)}}
+@keyframes gflash{0%,100%{box-shadow:0 0 0 0 oklch(0.72 0.17 48 / 0)}50%{box-shadow:0 0 0 6px oklch(0.72 0.17 48 / 0.25)}}
+@keyframes gscan{from{background-position:0 0}to{background-position:0 40px}}
+@keyframes gspin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+
+<div style="position:relative;width:100%;min-height:100vh;overflow:hidden;background:radial-gradient(1200px 700px at 78% 8%, oklch(0.24 0.05 292 / 0.55), transparent 62%),radial-gradient(900px 600px at 10% 92%, oklch(0.24 0.06 32 / 0.4), transparent 60%),oklch(0.13 0.014 268)">
+
+<div style="position:absolute;inset:0;pointer-events:none;opacity:0.35;background-image:linear-gradient(oklch(0.5 0.02 268 / 0.06) 1px, transparent 1px),linear-gradient(90deg, oklch(0.5 0.02 268 / 0.06) 1px, transparent 1px);background-size:40px 40px"></div>
+
+<!-- ══ menubar ══ -->
+<div style="position:relative;z-index:6;height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:oklch(0.16 0.014 268 / 0.82);backdrop-filter:blur(18px);border-bottom:1px solid oklch(0.28 0.02 268 / 0.7)">
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="display:flex;align-items:center;gap:7px">
+      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,oklch(0.78 0.17 55),oklch(0.6 0.2 25))"></div>
+      <span style="font:600 11.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.16em">GORDON</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;background:{{ monitorChipBg }};border:1px solid {{ monitorChipBorder }}">
+      <span style="width:6px;height:6px;border-radius:50%;background:{{ monitorDot }};animation:gpulse 1.6s ease-in-out infinite"></span>
+      <span style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.1em;color:{{ monitorDot }}">{{ monitorLabel }}</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button onClick="{{ togglePause }}" style="border:1px solid oklch(0.34 0.02 268);background:oklch(0.2 0.016 268);color:oklch(0.88 0.01 268);font:500 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.08em;padding:6px 11px;border-radius:7px;cursor:pointer" style-hover="border-color:oklch(0.72 0.17 48);color:oklch(0.82 0.15 48)">{{ pauseLabel }}</button>
+    <button onClick="{{ openDash }}" style="border:1px solid oklch(0.34 0.02 268);background:oklch(0.2 0.016 268);color:oklch(0.88 0.01 268);font:500 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.08em;padding:6px 11px;border-radius:7px;cursor:pointer" style-hover="border-color:oklch(0.72 0.17 48);color:oklch(0.82 0.15 48)">KITCHEN ⌘K</button>
+    <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:oklch(0.62 0.015 268)">Fri 23:47</span>
+  </div>
+</div>
+
+<!-- ══ workspace: the AI tool the user is actually working in ══ -->
+<div data-screen-label="Desk" style="position:relative;z-index:2;padding:34px 28px 40px;display:flex;justify-content:center">
+  <div style="width:100%;max-width:880px;border-radius:14px;overflow:hidden;background:oklch(0.17 0.014 268);border:1px solid oklch(0.29 0.02 268);box-shadow:0 40px 90px -30px oklch(0.05 0.02 268 / 0.9)">
+    <div style="height:38px;display:flex;align-items:center;gap:10px;padding:0 13px;background:oklch(0.2 0.016 268);border-bottom:1px solid oklch(0.28 0.02 268)">
+      <div style="display:flex;gap:6px">
+        <span style="width:10px;height:10px;border-radius:50%;background:oklch(0.55 0.14 25)"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:oklch(0.6 0.11 85)"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:oklch(0.58 0.1 150)"></span>
+      </div>
+      <div style="flex:1;display:flex;justify-content:center">
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 14px;border-radius:7px;background:oklch(0.15 0.014 268);border:1px solid oklch(0.27 0.02 268);font:400 11px/1 'IBM Plex Mono',monospace;color:oklch(0.6 0.015 268)">
+          <span style="width:5px;height:5px;border-radius:50%;background:oklch(0.6 0.1 150)"></span>chat.clyde.dev/workspace/checkout-bug
+        </div>
+      </div>
+      <div style="width:52px"></div>
+    </div>
+
+    <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:22px;height:22px;border-radius:6px;background:oklch(0.3 0.06 268);border:1px solid oklch(0.42 0.06 268)"></div>
+        <span style="font:600 13px/1 'Space Grotesk',sans-serif">Clyde</span>
+        <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:oklch(0.58 0.015 268);padding:4px 8px;border-radius:6px;background:oklch(0.21 0.016 268)">{{ toolModel }}</span>
+      </div>
+      <span style="font:400 11px/1 'IBM Plex Mono',monospace;color:oklch(0.5 0.015 268)">{{ tokenMeter }}</span>
+    </div>
+
+    <div style="padding:16px 24px 0;display:flex;flex-direction:column;gap:12px;min-height:170px;max-height:270px;overflow-y:auto">
+      <sc-for list="{{ messages }}" as="m" hint-placeholder-count="2">
+        <div style="display:flex;gap:10px;align-items:flex-start;opacity:{{ m.op }}">
+          <div style="flex:none;width:24px;height:24px;border-radius:7px;background:{{ m.avatarBg }};border:1px solid {{ m.avatarBorder }};display:flex;align-items:center;justify-content:center;font:600 9px/1 'IBM Plex Mono',monospace;color:{{ m.avatarFg }}">{{ m.initial }}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font:400 12.5px/1.6 'Space Grotesk',sans-serif;color:{{ m.color }};white-space:pre-wrap;word-break:break-word">{{ m.text }}</div>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ toolThinking }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:8px;align-items:center;padding-left:34px">
+          <span style="width:11px;height:11px;border:2px solid oklch(0.4 0.02 268);border-top-color:oklch(0.75 0.02 268);border-radius:50%;animation:gspin 0.7s linear infinite"></span>
+          <span style="font:400 11.5px/1 'IBM Plex Mono',monospace;color:oklch(0.55 0.015 268)">clyde is guessing…</span>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="padding:16px 24px 22px">
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;align-items:center">
+        <span style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.12em;color:oklch(0.48 0.015 268);margin-right:2px">TRY A PROMPT →</span>
+        <sc-for list="{{ presets }}" as="p" hint-placeholder-count="4">
+          <button onClick="{{ p.onClick }}" style="border:1px solid {{ p.border }};background:{{ p.bg }};color:{{ p.fg }};font:500 11px/1 'IBM Plex Mono',monospace;padding:6px 10px;border-radius:7px;cursor:pointer" style-hover="border-color:oklch(0.72 0.17 48);color:oklch(0.85 0.13 48)">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="border:1px solid oklch(0.31 0.02 268);border-radius:11px;background:oklch(0.15 0.014 268);padding:12px 14px 10px">
+        <textarea value="{{ draft }}" onChange="{{ onDraft }}" placeholder="Ask Clyde to fix something…" rows="3" style="width:100%;resize:none;border:none;outline:none;background:transparent;color:oklch(0.9 0.01 268);font:400 12.5px/1.65 'Space Grotesk',sans-serif;max-height:110px"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid oklch(0.24 0.018 268)">
+          <span style="font:400 10.5px/1 'IBM Plex Mono',monospace;color:oklch(0.5 0.015 268)">{{ draftMeta }}</span>
+          <button onClick="{{ send }}" style="border:none;background:linear-gradient(135deg,oklch(0.74 0.16 52),oklch(0.63 0.19 28));color:oklch(0.16 0.03 40);font:600 11.5px/1 'Space Grotesk',sans-serif;letter-spacing:0.03em;padding:8px 16px;border-radius:8px;cursor:pointer" style-hover="filter:brightness(1.1)">Send ↵</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GORDON OVERLAY ══ -->
+<div style="position:fixed;right:22px;bottom:22px;z-index:40;width:{{ overlayWidth }};display:flex;flex-direction:column;gap:10px;align-items:flex-end;pointer-events:none">
+
+  <sc-if value="{{ showDevices }}" hint-placeholder-val="{{ true }}">
+    <div style="pointer-events:auto;display:flex;gap:6px;padding:6px;border-radius:11px;background:oklch(0.17 0.014 268 / 0.9);backdrop-filter:blur(14px);border:1px solid oklch(0.29 0.02 268)">
+      <sc-for list="{{ deviceList }}" as="d" hint-placeholder-count="3">
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:7px;background:{{ d.bg }};border:1px solid {{ d.border }};animation:{{ d.anim }}">
+          <span style="width:6px;height:6px;border-radius:50%;background:{{ d.dot }}"></span>
+          <span style="font:500 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.08em;color:{{ d.fg }}">{{ d.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div style="pointer-events:auto;width:100%;border-radius:16px;overflow:hidden;background:oklch(0.165 0.016 268 / 0.96);backdrop-filter:blur(24px);border:1px solid {{ cardBorder }};box-shadow:0 30px 80px -24px oklch(0.04 0.02 268),0 0 0 1px oklch(0.1 0.01 268 / 0.6);animation:{{ cardAnim }}">
+
+    <!-- waveform head: the character -->
+    <div style="position:relative;padding:14px 16px 12px;background:linear-gradient(180deg,{{ headTint }},transparent);border-bottom:1px solid oklch(0.26 0.02 268)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:9px">
+          <span style="font:700 12px/1 'Space Grotesk',sans-serif;letter-spacing:0.04em">{{ personaName }}</span>
+          <span style="font:400 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.1em;color:oklch(0.58 0.015 268);padding:3px 7px;border-radius:5px;background:oklch(0.22 0.016 268)">{{ personaVoice }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button onClick="{{ openPersona }}" title="Change personality" style="border:1px solid oklch(0.32 0.02 268);background:transparent;color:oklch(0.66 0.015 268);font:500 9.5px/1 'IBM Plex Mono',monospace;padding:5px 8px;border-radius:6px;cursor:pointer" style-hover="color:oklch(0.85 0.14 300);border-color:oklch(0.6 0.14 300)">SWAP</button>
+          <button onClick="{{ dismiss }}" style="border:1px solid oklch(0.32 0.02 268);background:transparent;color:oklch(0.66 0.015 268);font:500 9.5px/1 'IBM Plex Mono',monospace;padding:5px 8px;border-radius:6px;cursor:pointer" style-hover="color:oklch(0.9 0.01 268)">✕</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:2px;height:56px;justify-content:center">
+        <sc-for list="{{ bars }}" as="b" hint-placeholder-count="34">
+          <div style="width:3px;border-radius:2px;background:{{ b.color }};height:{{ b.h }};transition:height 0.25s ease;transform-origin:center;animation:gwave {{ b.dur }} ease-in-out infinite alternate;animation-delay:{{ b.delay }}"></div>
+        </sc-for>
+      </div>
+      <div style="text-align:center;margin-top:8px;font:400 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:{{ statusFg }}">{{ statusLine }}</div>
+    </div>
+
+    <!-- verdict -->
+    <sc-if value="{{ hasVerdict }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px 16px 16px;display:flex;flex-direction:column;gap:13px;max-height:60vh;overflow-y:auto">
+
+        <div style="display:flex;gap:14px;align-items:center;animation:gfade 0.35s both">
+          <svg viewBox="0 0 148 148" style="width:118px;height:118px;flex:none">
+            <polygon points="{{ ring3 }}" fill="none" stroke="oklch(0.28 0.02 268)" stroke-width="1"></polygon>
+            <polygon points="{{ ring2 }}" fill="none" stroke="oklch(0.26 0.02 268)" stroke-width="1"></polygon>
+            <polygon points="{{ ring1 }}" fill="none" stroke="oklch(0.24 0.02 268)" stroke-width="1"></polygon>
+            <polygon points="{{ radarPts }}" fill="{{ radarFill }}" stroke="{{ radarStroke }}" stroke-width="1.5" stroke-linejoin="round"></polygon>
+            <sc-for list="{{ radarDots }}" as="d" hint-placeholder-count="6">
+              <circle cx="{{ d.x }}" cy="{{ d.y }}" r="2.2" fill="{{ radarStroke }}"></circle>
+            </sc-for>
+          </svg>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:baseline;gap:7px">
+              <span style="font:700 40px/1 'Space Grotesk',sans-serif;color:{{ scoreColor }};letter-spacing:-0.03em">{{ score }}</span>
+              <span style="font:400 12px/1 'IBM Plex Mono',monospace;color:oklch(0.52 0.015 268)">/100</span>
+            </div>
+            <div style="margin-top:6px;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.1em;color:{{ scoreColor }}">{{ verdictLabel }}</div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">
+              <sc-for list="{{ catRows }}" as="c" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:64px 1fr 24px;align-items:center;gap:7px">
+                  <span style="font:400 9px/1 'IBM Plex Mono',monospace;color:{{ c.labelFg }};letter-spacing:0.04em">{{ c.name }}</span>
+                  <span style="height:4px;border-radius:2px;background:oklch(0.24 0.018 268);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ c.w }};background:{{ c.color }};border-radius:2px"></span></span>
+                  <span style="font:500 9px/1 'IBM Plex Mono',monospace;color:{{ c.labelFg }};text-align:right">{{ c.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="animation:gfade 0.35s 0.08s both;padding:13px 14px;border-radius:11px;background:{{ roastBg }};border-left:2px solid {{ accent }}">
+          <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:{{ accent }};margin-bottom:7px">01 · ROAST</div>
+          <div style="font:500 14.5px/1.5 'Space Grotesk',sans-serif;color:oklch(0.95 0.008 268);text-wrap:pretty">{{ roast }}</div>
+        </div>
+
+        <div style="animation:gfade 0.35s 0.16s both">
+          <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:6px">02 · DIAGNOSIS</div>
+          <div style="font:400 12.5px/1.6 'Space Grotesk',sans-serif;color:oklch(0.78 0.012 268);text-wrap:pretty">{{ diagnosis }}</div>
+        </div>
+
+        <div style="animation:gfade 0.35s 0.24s both">
+          <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:6px">03 · BETTER APPROACH</div>
+          <div style="font:400 12.5px/1.6 'Space Grotesk',sans-serif;color:oklch(0.78 0.012 268);text-wrap:pretty">{{ lesson }}</div>
+        </div>
+
+        <sc-if value="{{ hasSource }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:gfade 0.35s 0.28s both;padding:11px 12px;border-radius:10px;background:oklch(0.2 0.03 292);border:1px solid oklch(0.36 0.05 292)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
+              <span style="font:400 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.12em;color:oklch(0.76 0.13 300)">FRONTIER KNOWLEDGE</span>
+              <span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:oklch(0.6 0.03 292)">{{ sourceDate }}</span>
+            </div>
+            <div style="font:400 12px/1.55 'Space Grotesk',sans-serif;color:oklch(0.85 0.02 292)">{{ sourceText }}</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:9px">
+              <a href="#" style="font:500 10px/1 'IBM Plex Mono',monospace;color:oklch(0.76 0.13 300);padding:5px 9px;border-radius:6px;border:1px solid oklch(0.4 0.06 292)">OPEN RELEASE NOTE ↗</a>
+              <span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:oklch(0.58 0.03 292)">{{ sourceConfidence }}</span>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="animation:gfade 0.35s 0.32s both">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268)">04 · FIXED PROMPT</span>
+            <button onClick="{{ copyFix }}" style="border:1px solid oklch(0.32 0.02 268);background:transparent;color:oklch(0.66 0.015 268);font:500 9.5px/1 'IBM Plex Mono',monospace;padding:5px 8px;border-radius:6px;cursor:pointer" style-hover="color:oklch(0.85 0.13 48);border-color:oklch(0.6 0.14 48)">{{ copyLabel }}</button>
+          </div>
+          <div style="padding:12px 13px;border-radius:10px;background:oklch(0.115 0.012 268);border:1px solid oklch(0.27 0.02 268);font:400 11.5px/1.65 'IBM Plex Mono',monospace;color:oklch(0.8 0.05 155);white-space:pre-wrap;max-height:150px;overflow-y:auto">{{ improved }}</div>
+        </div>
+
+        <div style="display:flex;gap:8px;animation:gfade 0.35s 0.4s both">
+          <button onClick="{{ useFix }}" style="flex:1;border:none;background:linear-gradient(135deg,oklch(0.74 0.16 52),oklch(0.63 0.19 28));color:oklch(0.15 0.03 40);font:600 12px/1 'Space Grotesk',sans-serif;padding:11px;border-radius:9px;cursor:pointer" style-hover="filter:brightness(1.1)">Use this prompt</button>
+          <button onClick="{{ dismiss }}" style="border:1px solid oklch(0.32 0.02 268);background:transparent;color:oklch(0.7 0.015 268);font:500 12px/1 'Space Grotesk',sans-serif;padding:11px 15px;border-radius:9px;cursor:pointer" style-hover="border-color:oklch(0.45 0.02 268)">Ignore him</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:2px">
+          <span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:oklch(0.45 0.015 268)">{{ loggedLine }}</span>
+          <button onClick="{{ openDash }}" style="border:none;background:transparent;color:oklch(0.6 0.015 268);font:500 9.5px/1 'IBM Plex Mono',monospace;cursor:pointer;text-decoration:underline;text-underline-offset:3px" style-hover="color:oklch(0.85 0.13 48)">VIEW KITCHEN</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ idleFooter }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:12px 16px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <span style="font:400 11.5px/1.5 'Space Grotesk',sans-serif;color:oklch(0.62 0.015 268);text-wrap:pretty">{{ idleQuip }}</span>
+        <button onClick="{{ openDash }}" style="flex:none;border:1px solid oklch(0.32 0.02 268);background:transparent;color:oklch(0.72 0.015 268);font:500 10px/1 'IBM Plex Mono',monospace;padding:7px 10px;border-radius:7px;cursor:pointer" style-hover="border-color:oklch(0.6 0.14 48);color:oklch(0.85 0.13 48)">KITCHEN</button>
+      </div>
+    </sc-if>
+  </div>
+</div>
+
+<!-- ══ GORDON WINDOW: dashboard / personalities / settings / privacy ══ -->
+<sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Gordon window" style="position:fixed;inset:0;z-index:60;background:oklch(0.08 0.012 268 / 0.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:26px">
+    <div style="width:100%;max-width:1000px;height:100%;max-height:660px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:oklch(0.155 0.014 268);border:1px solid oklch(0.3 0.02 268);box-shadow:0 50px 120px -30px oklch(0.03 0.02 268);animation:gpop 0.3s ease-out">
+      <div style="height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:oklch(0.185 0.016 268);border-bottom:1px solid oklch(0.28 0.02 268)">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <svg viewBox="19 11 82 79" width="16" height="15.4" style="display:block" aria-label="Gordon">
+              <circle cx="38" cy="42" r="19" fill="#EDEEF2"></circle><circle cx="60" cy="33" r="22" fill="#EDEEF2"></circle><circle cx="82" cy="42" r="19" fill="#EDEEF2"></circle>
+              <rect x="30" y="46" width="60" height="26" fill="#EDEEF2"></rect>
+              <rect x="28" y="70" width="64" height="20" rx="6" fill="#EB8B3E"></rect>
+              <g fill="#15161C"><rect x="36" y="76" width="5" height="8" rx="2.5"></rect><rect x="46" y="73" width="5" height="14" rx="2.5"></rect><rect x="56" y="70.5" width="5" height="19" rx="2.5"></rect><rect x="66" y="74" width="5" height="12" rx="2.5"></rect><rect x="76" y="77" width="5" height="6" rx="2.5"></rect></g>
+            </svg>
+            <span style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em">GORDON</span>
+          </div>
+          <div style="display:flex;gap:3px">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.onClick }}" style="border:none;background:{{ t.bg }};color:{{ t.fg }};font:500 11px/1 'Space Grotesk',sans-serif;padding:7px 12px;border-radius:7px;cursor:pointer">{{ t.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:22px 24px 28px">
+
+        <!-- DASHBOARD -->
+        <sc-if value="{{ tabDash }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap">
+              <div>
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.16em;color:oklch(0.55 0.015 268);margin-bottom:8px">KITCHEN RATING</div>
+                <div style="display:flex;align-items:center;gap:11px">
+                  <div style="display:flex;gap:4px">
+                    <sc-for list="{{ ratingPips }}" as="p" hint-placeholder-count="5">
+                      <span style="width:26px;height:9px;border-radius:3px;background:{{ p.bg }};border:1px solid {{ p.border }}"></span>
+                    </sc-for>
+                  </div>
+                  <span style="font:700 17px/1 'Space Grotesk',sans-serif;color:oklch(0.9 0.01 268)">{{ ratingName }}</span>
+                </div>
+                <div style="margin-top:7px;font:400 11.5px/1.5 'Space Grotesk',sans-serif;color:oklch(0.58 0.015 268)">{{ ratingNote }}</div>
+              </div>
+              <div style="padding:12px 15px;border-radius:11px;background:oklch(0.19 0.016 268);border:1px solid oklch(0.29 0.02 268);max-width:330px">
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.72 0.17 48);margin-bottom:7px">TODAY, IN GORDON'S WORDS</div>
+                <div style="font:400 12.5px/1.6 'Space Grotesk',sans-serif;color:oklch(0.82 0.012 268);text-wrap:pretty">{{ dailySummary }}</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+              <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="4">
+                <div style="padding:14px;border-radius:11px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+                  <div style="font:400 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.12em;color:oklch(0.55 0.015 268)">{{ m.label }}</div>
+                  <div style="margin-top:9px;font:700 26px/1 'Space Grotesk',sans-serif;letter-spacing:-0.02em;color:{{ m.color }}">{{ m.value }}</div>
+                  <div style="margin-top:5px;font:400 10.5px/1 'IBM Plex Mono',monospace;color:oklch(0.5 0.015 268)">{{ m.sub }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:14px">
+              <div style="padding:16px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:14px">CATEGORY TRACKING · LAST 14 DAYS</div>
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <sc-for list="{{ dashCats }}" as="c" hint-placeholder-count="6">
+                    <div style="display:grid;grid-template-columns:132px 1fr 60px;align-items:center;gap:10px">
+                      <span style="font:400 11px/1 'Space Grotesk',sans-serif;color:oklch(0.76 0.012 268)">{{ c.name }}</span>
+                      <span style="height:7px;border-radius:4px;background:oklch(0.23 0.018 268);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ c.w }};background:{{ c.color }};border-radius:4px"></span></span>
+                      <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:{{ c.color }};text-align:right">{{ c.tag }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="padding:16px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268);display:flex;flex-direction:column">
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:6px">AVG SCORE · 14 DAYS</div>
+                <div style="font:400 11px/1.5 'Space Grotesk',sans-serif;color:oklch(0.72 0.1 155);margin-bottom:10px">{{ trendNote }}</div>
+                <svg viewBox="0 0 300 110" preserveAspectRatio="none" style="width:100%;height:120px">
+                  <line x1="0" y1="27" x2="300" y2="27" stroke="oklch(0.25 0.02 268)" stroke-width="1"></line>
+                  <line x1="0" y1="55" x2="300" y2="55" stroke="oklch(0.25 0.02 268)" stroke-width="1"></line>
+                  <line x1="0" y1="83" x2="300" y2="83" stroke="oklch(0.25 0.02 268)" stroke-width="1"></line>
+                  <polyline points="{{ trendArea }}" fill="oklch(0.72 0.17 168 / 0.14)" stroke="none"></polyline>
+                  <polyline points="{{ trendLine }}" fill="none" stroke="oklch(0.75 0.15 168)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>
+                  <sc-for list="{{ trendDots }}" as="d" hint-placeholder-count="14">
+                    <circle cx="{{ d.x }}" cy="{{ d.y }}" r="2" fill="oklch(0.8 0.13 168)"></circle>
+                  </sc-for>
+                </svg>
+                <div style="display:flex;justify-content:space-between;font:400 9.5px/1 'IBM Plex Mono',monospace;color:oklch(0.48 0.015 268);margin-top:4px"><span>14d ago</span><span>today</span></div>
+              </div>
+            </div>
+
+            <div style="padding:16px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <span style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268)">INCIDENT LOG</span>
+                <button onClick="{{ clearHistory }}" style="border:1px solid oklch(0.32 0.02 268);background:transparent;color:oklch(0.62 0.015 268);font:500 9.5px/1 'IBM Plex Mono',monospace;padding:5px 9px;border-radius:6px;cursor:pointer" style-hover="color:oklch(0.78 0.14 25);border-color:oklch(0.55 0.14 25)">DELETE ALL HISTORY</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:1px">
+                <sc-for list="{{ history }}" as="h" hint-placeholder-count="5">
+                  <div style="display:grid;grid-template-columns:52px 116px 1fr 46px;gap:12px;align-items:center;padding:9px 8px;border-radius:7px;background:{{ h.rowBg }}">
+                    <span style="font:400 10px/1 'IBM Plex Mono',monospace;color:oklch(0.5 0.015 268)">{{ h.time }}</span>
+                    <span style="font:500 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.06em;color:{{ h.catColor }}">{{ h.cat }}</span>
+                    <span style="font:400 11.5px/1.4 'Space Grotesk',sans-serif;color:oklch(0.72 0.012 268);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ h.text }}</span>
+                    <span style="font:600 12px/1 'Space Grotesk',sans-serif;color:{{ h.scoreColor }};text-align:right">{{ h.score }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- PERSONALITIES -->
+        <sc-if value="{{ tabPersona }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <div style="font:700 19px/1.2 'Space Grotesk',sans-serif">Who's yelling at you today?</div>
+              <div style="margin-top:6px;font:400 12.5px/1.6 'Space Grotesk',sans-serif;color:oklch(0.6 0.015 268);max-width:560px">Same evaluation engine, same rubric, same scores. Only the voice, the animation and the level of contempt change. Voices are original and synthesised through the ElevenLabs streaming API.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(292px,1fr));gap:12px">
+              <sc-for list="{{ personaCards }}" as="p" hint-placeholder-count="6">
+                <div onClick="{{ p.onClick }}" style="cursor:pointer;padding:15px;border-radius:12px;background:{{ p.bg }};border:1px solid {{ p.border }};display:flex;flex-direction:column;gap:11px" style-hover="border-color:oklch(0.55 0.1 292)">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <div style="width:34px;height:34px;border-radius:10px;background:{{ p.swatch }};display:flex;align-items:center;justify-content:center;font:700 12px/1 'IBM Plex Mono',monospace;color:oklch(0.14 0.02 268)">{{ p.initials }}</div>
+                      <div>
+                        <div style="font:600 13.5px/1.2 'Space Grotesk',sans-serif;color:oklch(0.93 0.01 268)">{{ p.name }}</div>
+                        <div style="margin-top:3px;font:400 9.5px/1 'IBM Plex Mono',monospace;color:oklch(0.55 0.015 268)">{{ p.voice }}</div>
+                      </div>
+                    </div>
+                    <span style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:0.08em;padding:4px 7px;border-radius:5px;background:{{ p.badgeBg }};color:{{ p.badgeFg }}">{{ p.badge }}</span>
+                  </div>
+                  <div style="font:400 11.5px/1.55 'Space Grotesk',sans-serif;color:oklch(0.66 0.012 268);font-style:italic;text-wrap:pretty">“{{ p.line }}”</div>
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <span style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:0.08em;color:oklch(0.5 0.015 268)">HEAT</span>
+                    <span style="display:flex;gap:3px">
+                      <sc-for list="{{ p.heat }}" as="h" hint-placeholder-count="5">
+                        <span style="width:17px;height:5px;border-radius:2px;background:{{ h.bg }}"></span>
+                      </sc-for>
+                    </span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- SETTINGS -->
+        <sc-if value="{{ tabSettings }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="padding:17px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:14px">ROAST INTENSITY</div>
+                <div style="display:flex;gap:6px">
+                  <sc-for list="{{ intensitySteps }}" as="s" hint-placeholder-count="5">
+                    <button onClick="{{ s.onClick }}" style="flex:1;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font:500 10px/1.3 'IBM Plex Mono',monospace;padding:10px 4px;border-radius:8px;cursor:pointer">{{ s.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="margin-top:11px;font:400 12px/1.55 'Space Grotesk',sans-serif;color:oklch(0.66 0.012 268)">{{ intensityNote }}</div>
+              </div>
+              <div style="padding:17px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:14px">VOICE · ELEVENLABS</div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                    <span style="font:400 12px/1 'Space Grotesk',sans-serif;color:oklch(0.8 0.012 268)">Volume</span>
+                    <span style="flex:1;max-width:190px;display:flex;gap:3px">
+                      <sc-for list="{{ volumeBars }}" as="v" hint-placeholder-count="10">
+                        <button onClick="{{ v.onClick }}" style="flex:1;height:20px;border:none;border-radius:3px;background:{{ v.bg }};cursor:pointer"></button>
+                      </sc-for>
+                    </span>
+                    <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:oklch(0.72 0.17 48);width:34px;text-align:right">{{ volumeLabel }}</span>
+                  </div>
+                  <sc-for list="{{ voiceToggles }}" as="t" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                      <div>
+                        <div style="font:400 12px/1 'Space Grotesk',sans-serif;color:oklch(0.8 0.012 268)">{{ t.label }}</div>
+                        <div style="margin-top:4px;font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:oklch(0.5 0.015 268)">{{ t.sub }}</div>
+                      </div>
+                      <button onClick="{{ t.onClick }}" style="flex:none;width:40px;height:22px;border-radius:999px;border:1px solid {{ t.border }};background:{{ t.track }};position:relative;cursor:pointer;padding:0">
+                        <span style="position:absolute;top:2px;left:{{ t.knobLeft }};width:16px;height:16px;border-radius:50%;background:{{ t.knob }};transition:left 0.18s ease"></span>
+                      </button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="padding:17px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                  <span style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268)">PUNISHMENT DEVICES</span>
+                  <span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:oklch(0.5 0.015 268)">trigger(category, severity, msg)</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ deviceRows }}" as="d" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:9px;background:{{ d.rowBg }};border:1px solid {{ d.rowBorder }}">
+                      <div style="min-width:0">
+                        <div style="font:500 12px/1 'Space Grotesk',sans-serif;color:oklch(0.85 0.012 268)">{{ d.name }}</div>
+                        <div style="margin-top:5px;font:400 10px/1 'IBM Plex Mono',monospace;color:oklch(0.52 0.015 268)">{{ d.meta }}</div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:9px">
+                        <button onClick="{{ d.onTest }}" style="border:1px solid oklch(0.32 0.02 268);background:transparent;color:oklch(0.65 0.015 268);font:500 9.5px/1 'IBM Plex Mono',monospace;padding:6px 9px;border-radius:6px;cursor:pointer" style-hover="color:oklch(0.85 0.13 48)">TEST</button>
+                        <button onClick="{{ d.onToggle }}" style="flex:none;width:40px;height:22px;border-radius:999px;border:1px solid {{ d.border }};background:{{ d.track }};position:relative;cursor:pointer;padding:0">
+                          <span style="position:absolute;top:2px;left:{{ d.knobLeft }};width:16px;height:16px;border-radius:50%;background:{{ d.knob }};transition:left 0.18s ease"></span>
+                        </button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="padding:17px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:11px">WEBHOOK PAYLOAD PREVIEW</div>
+                <pre style="margin:0;padding:12px;border-radius:9px;background:oklch(0.115 0.012 268);border:1px solid oklch(0.26 0.02 268);font:400 10.5px/1.6 'IBM Plex Mono',monospace;color:oklch(0.75 0.06 155);overflow-x:auto">{{ webhookJson }}</pre>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- PRIVACY (grouped under Settings & Privacy) -->
+        <sc-if value="{{ tabSettings }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:15px;max-width:760px;margin-top:26px;padding-top:24px;border-top:1px solid oklch(0.27 0.02 268)">
+            <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.16em;color:oklch(0.55 0.015 268)">PRIVACY</div>
+            <div style="display:flex;align-items:center;gap:14px;padding:17px;border-radius:12px;background:{{ privacyBg }};border:1px solid {{ privacyBorder }}">
+              <span style="width:11px;height:11px;border-radius:50%;background:{{ monitorDot }};animation:gpulse 1.6s ease-in-out infinite;flex:none"></span>
+              <div style="flex:1">
+                <div style="font:600 14px/1.2 'Space Grotesk',sans-serif;color:oklch(0.93 0.01 268)">{{ privacyTitle }}</div>
+                <div style="margin-top:5px;font:400 11.5px/1.5 'Space Grotesk',sans-serif;color:oklch(0.65 0.012 268)">{{ privacySub }}</div>
+              </div>
+              <button onClick="{{ togglePause }}" style="flex:none;border:none;background:{{ pauseBtnBg }};color:{{ pauseBtnFg }};font:600 12px/1 'Space Grotesk',sans-serif;padding:11px 17px;border-radius:9px;cursor:pointer" style-hover="filter:brightness(1.12)">{{ pauseBtnLabel }}</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div style="padding:17px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:13px">APPS GORDON MAY WATCH</div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ appRows }}" as="a" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:8px;background:oklch(0.155 0.014 268);border:1px solid oklch(0.25 0.02 268)">
+                      <span style="font:400 12px/1 'Space Grotesk',sans-serif;color:oklch(0.82 0.012 268)">{{ a.name }}</span>
+                      <span style="font:500 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:0.06em;color:{{ a.fg }}">{{ a.state }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="padding:17px;border-radius:12px;background:oklch(0.185 0.016 268);border:1px solid oklch(0.27 0.02 268)">
+                <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.55 0.015 268);margin-bottom:13px">WHAT LEAVES YOUR MACHINE</div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ privacyFacts }}" as="f" hint-placeholder-count="5">
+                    <div style="display:flex;gap:9px;align-items:flex-start">
+                      <span style="flex:none;margin-top:4px;width:6px;height:6px;border-radius:2px;background:{{ f.dot }}"></span>
+                      <span style="font:400 11.5px/1.5 'Space Grotesk',sans-serif;color:oklch(0.72 0.012 268)">{{ f.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="padding:15px 17px;border-radius:12px;background:oklch(0.19 0.03 32);border:1px solid oklch(0.36 0.06 32)">
+              <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.14em;color:oklch(0.78 0.14 48);margin-bottom:8px">REDACTION PREVIEW · LAST CAPTURE</div>
+              <pre style="margin:0;font:400 11px/1.7 'IBM Plex Mono',monospace;color:oklch(0.8 0.02 40);white-space:pre-wrap">{{ redactionSample }}</pre>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ══ ONBOARDING ══ -->
+<sc-if value="{{ onboarding }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Onboarding" style="position:fixed;inset:0;z-index:80;background:oklch(0.09 0.014 268 / 0.9);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px">
+    <div style="width:100%;max-width:520px;border-radius:18px;overflow:hidden;background:oklch(0.165 0.016 268);border:1px solid oklch(0.3 0.02 268);box-shadow:0 50px 120px -30px oklch(0.03 0.02 268);animation:gpop 0.35s ease-out">
+      <div style="padding:26px 26px 20px;background:linear-gradient(180deg,oklch(0.24 0.05 40 / 0.55),transparent)">
+        <div style="display:flex;align-items:center;gap:2px;height:44px;justify-content:center;margin-bottom:18px">
+          <sc-for list="{{ obBars }}" as="b" hint-placeholder-count="28">
+            <div style="width:3px;border-radius:2px;background:linear-gradient(180deg,oklch(0.82 0.16 55),oklch(0.62 0.19 28));height:{{ b.h }};animation:gwave {{ b.dur }} ease-in-out infinite alternate;animation-delay:{{ b.delay }}"></div>
+          </sc-for>
+        </div>
+        <div style="text-align:center">
+          <div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:0.2em;color:oklch(0.72 0.17 48)">STEP {{ obStep }} OF 3</div>
+          <div style="margin-top:12px;font:700 25px/1.2 'Space Grotesk',sans-serif;letter-spacing:-0.02em;text-wrap:pretty">{{ obTitle }}</div>
+          <div style="margin-top:10px;font:400 13px/1.6 'Space Grotesk',sans-serif;color:oklch(0.68 0.012 268);text-wrap:pretty">{{ obBody }}</div>
+        </div>
+      </div>
+      <div style="padding:0 26px 22px;display:flex;flex-direction:column;gap:9px">
+        <sc-for list="{{ obItems }}" as="i" hint-placeholder-count="3">
+          <div style="display:flex;gap:11px;align-items:flex-start;padding:12px 13px;border-radius:10px;background:oklch(0.145 0.014 268);border:1px solid oklch(0.26 0.02 268)">
+            <span style="flex:none;margin-top:2px;width:16px;height:16px;border-radius:5px;background:{{ i.dot }};display:flex;align-items:center;justify-content:center;font:700 9px/1 'IBM Plex Mono',monospace;color:oklch(0.14 0.02 268)">{{ i.mark }}</span>
+            <div>
+              <div style="font:500 12.5px/1.35 'Space Grotesk',sans-serif;color:oklch(0.88 0.01 268)">{{ i.title }}</div>
+              <div style="margin-top:4px;font:400 11px/1.5 'IBM Plex Mono',monospace;color:oklch(0.55 0.015 268)">{{ i.sub }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="padding:0 26px 26px;display:flex;gap:9px">
+        <button onClick="{{ obBack }}" style="border:1px solid oklch(0.31 0.02 268);background:transparent;color:oklch(0.66 0.015 268);font:500 12.5px/1 'Space Grotesk',sans-serif;padding:12px 16px;border-radius:10px;cursor:pointer" style-hover="border-color:oklch(0.45 0.02 268)">{{ obBackLabel }}</button>
+        <button onClick="{{ obNext }}" style="flex:1;border:none;background:linear-gradient(135deg,oklch(0.74 0.16 52),oklch(0.63 0.19 28));color:oklch(0.15 0.03 40);font:600 13px/1 'Space Grotesk',sans-serif;padding:12px;border-radius:10px;cursor:pointer" style-hover="filter:brightness(1.1)">{{ obNextLabel }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;personality&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;chef&quot;,&quot;prof&quot;,&quot;coach&quot;,&quot;senior&quot;,&quot;king&quot;,&quot;mother&quot;],&quot;default&quot;:&quot;chef&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gordon&quot;},&quot;roastIntensity&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:1,&quot;max&quot;:5,&quot;step&quot;:1,&quot;default&quot;:4,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Gordon&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;oklch(0.74 0.16 52)&quot;,&quot;oklch(0.74 0.16 340)&quot;,&quot;oklch(0.74 0.16 165)&quot;,&quot;oklch(0.74 0.16 285)&quot;],&quot;default&quot;:&quot;oklch(0.74 0.16 285)&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gordon&quot;},&quot;showDeviceStrip&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+class Component extends DCLogic {
+  cats = [
+    ["prompt_specificity", "Specificity"],
+    ["token_conservation", "Tokens"],
+    ["frontier_awareness", "Frontier"],
+    ["tool_selection", "Tool"],
+    ["context_management", "Context"],
+    ["verification", "Verify"]
+  ];
+
+  seed = [0.42,0.78,0.31,0.95,0.55,0.7,0.38,0.88,0.62,0.44,0.81,0.29,0.72,0.5,0.93,0.35,0.66,0.84,0.4,0.58,0.76,0.33,0.9,0.47,0.69,0.53,0.86,0.36,0.74,0.6,0.45,0.82,0.39,0.65];
+
+  personas = [
+    {id:"chef", name:"Angry Chef", initials:"AC", voice:"ElevenLabs · Ember (original)", heat:5, badge:"ACTIVE", swatch:"linear-gradient(135deg,oklch(0.8 0.16 60),oklch(0.62 0.2 26))", line:"This prompt is raw. RAW. Where is the error message?"},
+    {id:"prof", name:"Disappointed Professor", initials:"DP", voice:"ElevenLabs · Slate (original)", heat:2, badge:"INSTALLED", swatch:"linear-gradient(135deg,oklch(0.78 0.1 250),oklch(0.6 0.14 275))", line:"I'm not angry. I had simply hoped for more by week four."},
+    {id:"coach", name:"Overly Competitive Coach", initials:"OC", voice:"ElevenLabs · Blitz (original)", heat:4, badge:"INSTALLED", swatch:"linear-gradient(135deg,oklch(0.8 0.15 140),oklch(0.6 0.16 160))", line:"That prompt was a warm-up lap. Give me the real one. GO."},
+    {id:"senior", name:"Passive-Aggressive Senior", initials:"PA", voice:"ElevenLabs · Dry (original)", heat:3, badge:"INSTALLED", swatch:"linear-gradient(135deg,oklch(0.75 0.08 210),oklch(0.55 0.09 225))", line:"Interesting approach. Ship it. I'll be in the incident channel."},
+    {id:"king", name:"Medieval King", initials:"MK", voice:"ElevenLabs · Herald (original)", heat:4, badge:"GET IT · 4.9★", swatch:"linear-gradient(135deg,oklch(0.8 0.13 90),oklch(0.62 0.15 65))", line:"Thou hast summoned the machine and told it nothing. Off with it."},
+    {id:"mother", name:"Deeply Concerned Mother", initials:"CM", voice:"ElevenLabs · Warm (original)", heat:1, badge:"GET IT · 4.7★", swatch:"linear-gradient(135deg,oklch(0.82 0.1 20),oklch(0.66 0.12 350))", line:"Sweetheart. It's 2am. You didn't even paste the error again."}
+  ];
+
+  scenarios = {
+    tokens: {
+      key:"tokens", cat:"token_conservation", catLabel:"TOKEN WASTE", score:24, severity:3, action:"desk_buzzer",
+      scores:{prompt_specificity:30,token_conservation:8,frontier_awareness:65,tool_selection:55,context_management:12,verification:20},
+      roast:"Two thousand words of company lore, a standup transcript and somebody's lunch order — and nine words about the actual bug. You've hidden the problem like a damn Easter egg and then billed yourself for the hunt.",
+      diagnosis:"About 91% of this prompt is context the model cannot act on: the mission statement, the Q3 roadmap, three unrelated files and a full conversation replay. The defect itself — \"checkout sometimes fails\" — has no error, no file and no reproduction path.",
+      lesson:"Context isn't a gift, it's a bill. Paste the stack trace and the one file it points at, then stop typing. If the model needs more, it will ask — that round trip is cheaper than this wall.",
+      improved:"In services/checkout.ts, createOrder() throws:\n  TypeError: cannot read properties of undefined (reading 'id')\n  at createOrder (services/checkout.ts:118)\n\nRepro: guest user, saved card, single item.\nExpected: guest orders complete without a user record.\nConstraint: don't touch payments/adapter.ts, the API shape is frozen.\n\nFind the cause, explain it, then propose the smallest fix.",
+      verdict:"BURNT · SEVERITY 3", quip:"~7,400 tokens saved if you send the fix instead."
+    },
+    vague: {
+      key:"vague", cat:"prompt_specificity", catLabel:"SPECIFICITY", score:17, severity:2, action:"smart_light",
+      scores:{prompt_specificity:6,token_conservation:70,frontier_awareness:60,tool_selection:45,context_management:22,verification:10},
+      roast:"\"Make this work.\" Make WHAT work? Three words and a prayer. Even the model is embarrassed for you, and it's contractually obliged to be nice.",
+      diagnosis:"No file, no error, no expected behaviour, no mention of what you already tried. The model will now guess — confidently, at length — and you'll spend twenty minutes undoing a refactor you never asked for.",
+      lesson:"Name the file, paste the exact error, and say what \"working\" looks like. Three sentences beats three words every single time.",
+      improved:"In auth.ts, login() returns 401 after the access token expires instead of refreshing.\n\nError: \"AuthError: token_expired\" at auth.ts:64\nAlready tried: bumping the token TTL, no change.\nExpected: silent refresh, user stays signed in.\nConstraint: keep the public API of login() identical.\n\nFind the cause first and explain it before writing code.",
+      verdict:"RAW · SEVERITY 2", quip:"One line of error text would have doubled this score."
+    },
+    outdated: {
+      key:"outdated", cat:"frontier_awareness", catLabel:"FRONTIER", score:38, severity:2, action:"smart_light",
+      scores:{prompt_specificity:62,token_conservation:58,frontier_awareness:9,tool_selection:30,context_management:55,verification:25},
+      roast:"You're ordering off a menu from 2022. That model was deprecated so long ago it has a hell of a retirement plan, and you're still asking it to write your streaming handler.",
+      diagnosis:"The prompt pins a retired completion-era model and an API shape that no longer supports tool calls or streaming — two things this task explicitly needs. The rest of the prompt is fine, which somehow makes it worse.",
+      lesson:"Pin the capability, not the model name. Say what you need — streaming, tool calls, long context — and let the current release satisfy it.",
+      improved:"Rewrite src/agent/runner.ts to use the current chat-completions interface with streaming and tool calling.\n\nRequirements: stream partial tokens to the client, support 2 tool definitions, keep the existing AgentRunner signature.\nDon't hardcode a model id — read it from config/models.ts.\nCite the docs page you used for the request shape.",
+      verdict:"STALE · SEVERITY 2",
+      source:{text:"The completion-era endpoint you named was retired; the current chat interface is the supported path for tool calls and streaming. Gordon quotes only what the release note says — no invented benchmarks.", date:"release note · 2026-06-18", conf:"confidence: high · 1 source"},
+      quip:"Frontier index refreshed 3 hours ago."
+    },
+    good: {
+      key:"good", cat:"none", catLabel:"CLEAN", score:89, severity:0, action:"none",
+      scores:{prompt_specificity:94,token_conservation:88,frontier_awareness:85,tool_selection:90,context_management:87,verification:78},
+      roast:"…Fine. It's scoped, it names the file, it has the actual error, and it tells the model what done looks like. I have nothing. Get out of my kitchen before I find something.",
+      diagnosis:"Nothing structural is wrong. The only soft spot is verification — you never said how you'd know the fix worked.",
+      lesson:"Add one line: \"add a failing test first, then make it pass.\" That's the difference between 89 and something I'd hang on the wall.",
+      improved:"…same prompt, plus:\n\nWrite a failing test in checkout.test.ts that reproduces the guest-checkout crash first, then fix it and show the test passing.",
+      verdict:"SERVICEABLE", quip:"Don't get comfortable."
+    }
+  };
+
+  presetText = {
+    tokens:"Hey! So a bit of background first — we're a Series A company building tooling for restaurants, founded in 2021 by three ex-hospitality people who were tired of clipboard workflows. Our mission is to make back-of-house software invisible. Q3 roadmap: loyalty, gift cards, a new onboarding flow, and the checkout rewrite. Here's our standup from Tuesday: Marco is on the Stripe migration, Priya is out until the 14th, Dev is unblocking the analytics pipeline, and we agreed to freeze the API. I'm also pasting our entire design doc below, plus utils.ts, logger.ts, theme.ts, and the seed script, because I want you to have full context. Also Priya ordered the katsu curry again. Anyway. Checkout sometimes fails. Make it not do that.",
+    vague:"make this work",
+    outdated:"use text-davinci-003 with the old completions endpoint to rewrite our agent runner, and give it streaming + tool calls",
+    good:"In services/checkout.ts, createOrder() throws \"TypeError: cannot read properties of undefined (reading 'id')\" at line 118 when a guest user checks out with a saved card. Expected: guest orders complete without a user record. Don't modify payments/adapter.ts. Explain the cause before writing the fix."
+  };
+
+  state = {
+    onboardStep: 1,
+    onboarded: (typeof localStorage !== "undefined" && localStorage.getItem("gordon.onboarded") === "1"),
+    panel: true,        // after onboarding, land directly in the Kitchen
+    tab: "dashboard",   // "dashboard" tab is labelled "Kitchen"
+    draft: "",
+    mode: "idle",
+    speaking: false,
+    current: null,
+    paused: false,
+    persona: null,
+    intensity: null,
+    volume: 7,
+    copied: false,
+    firing: false,
+    toolThinking: false,
+    devices: {lamp:true, buzzer:true, bell:false, slack:true},
+    voiceFlags: {stream:true, cache:true, fallback:true},
+    todayCount: 3,
+    saved: 12400,
+    messages: [
+      {who:"you", text:"can you look at the checkout thing"},
+      {who:"clyde", text:"Sure — which file is checkout handled in? I don't have that context yet."}
+    ],
+    history: [
+      {time:"23:41", cat:"SPECIFICITY", text:"\"fix the error\"", score:14},
+      {time:"23:12", cat:"VERIFICATION", text:"shipped generated migration without running it", score:31},
+      {time:"22:58", cat:"TOOL", text:"asked a chatbot to run a terminal command", score:44}
+    ],
+    // live backend data (null until componentDidMount fetches; falls back to the demo values above)
+    ratingLabel: null, ratingStars: null, avgScore: null, worstCatLabel: null,
+    catHits: null, dailyText: null, trendData: null
+  };
+
+  API = "https://gordon-platform.fly.dev";
+  async componentDidMount() {
+    try {
+      const [sum, daily, hist, events] = await Promise.all([
+        fetch(this.API + "/api/dashboard/summary").then(r => r.json()),
+        fetch(this.API + "/api/dashboard/daily").then(r => r.json()),
+        fetch(this.API + "/api/dashboard/history?days=14").then(r => r.json()),
+        fetch(this.API + "/api/events?limit=50").then(r => r.json()),
+      ]);
+      const catLabel = { prompt_specificity:"SPECIFICITY", token_conservation:"TOKEN", frontier_awareness:"FRONTIER", tool_selection:"TOOL", context_management:"CONTEXT", verification:"VERIFICATION" };
+      const history = (Array.isArray(events) ? events : []).map(e => ({
+        time: (e.timestamp || "").slice(11, 16),
+        cat: catLabel[e.primary_category] || (e.primary_category || "").toUpperCase(),
+        text: '"' + (e.prompt_text || "") + '"',
+        score: e.overall_score,
+      }));
+      const trendData = (Array.isArray(hist) ? hist : []).map(h => Math.round(h.average_score || 0));
+      this.setState({
+        todayCount: daily && typeof daily.today === "number" ? daily.today : this.state.todayCount,
+        saved: sum ? (sum.tokens_potentially_saved_estimate || 0) : this.state.saved,
+        ratingLabel: sum && sum.kitchen_rating ? sum.kitchen_rating.label : null,
+        ratingStars: sum && sum.kitchen_rating ? sum.kitchen_rating.stars : null,
+        avgScore: sum ? Math.round(sum.average_prompt_score) : null,
+        worstCatLabel: sum ? sum.worst_category : null,
+        catHits: sum ? sum.category_hits_14d : null,
+        dailyText: daily ? daily.text : null,
+        trendData: trendData.length ? trendData : null,
+        history: history.length ? history : this.state.history,
+      });
+    } catch (e) { /* offline — keep the demo data */ }
+  }
+
+  timers = [];
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  later(fn, ms) { this.timers.push(setTimeout(fn, ms)); }
+
+  get persona() {
+    const id = this.state.persona || this.props.personality || "chef";
+    return this.personas.find(p => p.id === id) || this.personas[0];
+  }
+  get accent() { return this.props.accent || "oklch(0.74 0.16 52)"; }
+  get intensity() { return this.state.intensity || this.props.roastIntensity || 4; }
+
+  pick(t) {
+    const s = t.trim();
+    const w = s ? s.split(/\s+/).length : 0;
+    if (/davinci|gpt-3\b|completions endpoint|jquery|python 2|node 12|angular\.?js|claude-1/i.test(s)) return this.scenarios.outdated;
+    if (w > 90) return this.scenarios.tokens;
+    if (w < 9) return this.scenarios.vague;
+    if (/error|expected|constraint|\.ts|\.py|\.js/i.test(s) && w > 24) return this.scenarios.good;
+    return this.scenarios.vague;
+  }
+
+  send = () => {
+    const text = this.state.draft.trim();
+    if (!text) return;
+    const short = text.length > 190 ? text.slice(0, 190) + " …[+" + (text.length - 190) + " chars]" : text;
+    this.setState(s => ({ messages: [...s.messages, {who:"you", text: short}], draft: "", toolThinking: true }));
+    if (this.state.paused) {
+      this.later(() => this.setState(s => ({toolThinking:false, messages:[...s.messages, {who:"clyde", text:"Sure! I'll take a guess at what you meant and rewrite four files."}]})), 900);
+      return;
+    }
+    const sc = this.pick(text);
+    this.setState({ mode: "thinking", current: null, copied: false });
+    this.later(() => {
+      this.setState(s => ({
+        mode: "verdict", current: sc, speaking: true, toolThinking: false,
+        firing: sc.severity > 0,
+        todayCount: s.todayCount + (sc.severity > 0 ? 1 : 0),
+        saved: s.saved + (sc.key === "tokens" ? 7400 : sc.severity > 0 ? 600 : 0),
+        history: sc.severity > 0
+          ? [{time:"23:47", cat:sc.catLabel.split(" ")[0], text: short.slice(0, 46), score: sc.score}, ...s.history]
+          : s.history
+      }));
+      this.later(() => this.setState({speaking:false}), 5200);
+      this.later(() => this.setState({firing:false}), 1600);
+    }, 1100);
+  };
+
+  onDraft = e => this.setState({ draft: e.target.value });
+  usePreset = k => () => this.setState({ draft: this.presetText[k] });
+  dismiss = () => this.setState({ mode: "idle", current: null, speaking: false });
+  useFix = () => {
+    const c = this.state.current;
+    if (c) this.setState({ draft: c.improved, mode: "idle", current: null, speaking: false });
+  };
+  copyFix = () => {
+    const c = this.state.current;
+    if (c && navigator.clipboard) navigator.clipboard.writeText(c.improved).catch(() => {});
+    this.setState({ copied: true });
+    this.later(() => this.setState({ copied: false }), 1600);
+  };
+  togglePause = () => this.setState(s => {
+    const paused = !s.paused;
+    fetch(this.API + "/api/monitoring/" + (paused ? "pause" : "resume"), { method: "POST" }).catch(() => {});
+    return { paused };
+  });
+  openPanel = t => () => this.setState({ panel: true, tab: t });
+  closePanel = () => this.setState({ panel: null });
+  setPersona = id => () => {
+    // persist server-side so the capture extension + engine pick it up
+    fetch(this.API + "/api/settings/personality", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personality_id: id }),
+    }).catch(() => {});
+    this.setState({ persona: id });
+  };
+  setIntensity = n => () => this.setState({ intensity: n });
+  setVolume = n => () => this.setState({ volume: n });
+  toggleDevice = k => () => this.setState(s => ({ devices: {...s.devices, [k]: !s.devices[k]} }));
+  testDevice = () => { this.setState({firing:true}); this.later(() => this.setState({firing:false}), 1200); };
+  toggleVoice = k => () => this.setState(s => ({ voiceFlags: {...s.voiceFlags, [k]: !s.voiceFlags[k]} }));
+  clearHistory = () => {
+    fetch(this.API + "/api/history", { method: "DELETE" }).catch(() => {});
+    this.setState({ history: [], todayCount: 0 });
+  };
+  markOnboarded = () => { try { localStorage.setItem("gordon.onboarded", "1"); } catch (e) {} };
+  obNext = () => this.setState(s => { if (s.onboardStep >= 3) { this.markOnboarded(); return {onboarded:true}; } return {onboardStep: s.onboardStep + 1}; });
+  obBack = () => this.setState(s => { if (s.onboardStep <= 1) { this.markOnboarded(); return {onboarded:true}; } return {onboardStep: s.onboardStep - 1}; });
+
+  hex(cx, cy, r) {
+    return this.cats.map((c, i) => {
+      const a = (-90 + i * 60) * Math.PI / 180;
+      return (cx + r * Math.cos(a)).toFixed(1) + "," + (cy + r * Math.sin(a)).toFixed(1);
+    }).join(" ");
+  }
+
+  toggleStyle(on, hue) {
+    const c = hue || "oklch(0.74 0.16 52)";
+    return {
+      track: on ? c : "oklch(0.24 0.018 268)",
+      border: on ? c : "oklch(0.34 0.02 268)",
+      knob: on ? "oklch(0.16 0.03 40)" : "oklch(0.5 0.015 268)",
+      knobLeft: on ? "20px" : "2px"
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const cur = st.current;
+    const p = this.persona;
+    const accent = this.accent;
+    const speaking = st.speaking || st.mode === "thinking";
+    const amp = speaking ? 34 : 9;
+    const showDev = this.props.showDeviceStrip !== false;
+
+    const bars = this.seed.map((v, i) => ({
+      h: Math.max(3, Math.round(v * amp + (i % 3) * 2)) + "px",
+      dur: (0.42 + (i % 5) * 0.13).toFixed(2) + "s",
+      delay: ((i % 7) * 0.06).toFixed(2) + "s",
+      color: speaking ? "linear-gradient(180deg,oklch(0.85 0.15 58),oklch(0.62 0.2 26))" : "oklch(0.42 0.03 268)"
+    }));
+    const obBars = this.seed.slice(0, 28).map((v, i) => ({
+      h: Math.max(4, Math.round(v * 30)) + "px",
+      dur: (0.5 + (i % 4) * 0.15).toFixed(2) + "s",
+      delay: ((i % 6) * 0.07).toFixed(2) + "s"
+    }));
+
+    const scoreColor = !cur ? accent : cur.score >= 75 ? "oklch(0.78 0.15 165)" : cur.score >= 45 ? "oklch(0.8 0.14 85)" : "oklch(0.72 0.18 32)";
+    const cs = cur ? cur.scores : null;
+    const catRows = this.cats.map(([k, name]) => {
+      const v = cs ? cs[k] : 0;
+      return {
+        name, v,
+        w: v + "%",
+        color: v >= 70 ? "oklch(0.72 0.15 165)" : v >= 40 ? "oklch(0.76 0.14 85)" : "oklch(0.68 0.18 32)",
+        labelFg: cur && k === cur.cat ? "oklch(0.85 0.14 32)" : "oklch(0.6 0.015 268)"
+      };
+    });
+    const radarPts = cs ? this.cats.map(([k], i) => {
+      const a = (-90 + i * 60) * Math.PI / 180;
+      const r = 8 + (cs[k] / 100) * 48;
+      return (74 + r * Math.cos(a)).toFixed(1) + "," + (74 + r * Math.sin(a)).toFixed(1);
+    }).join(" ") : "";
+    const radarDots = cs ? this.cats.map(([k], i) => {
+      const a = (-90 + i * 60) * Math.PI / 180;
+      const r = 8 + (cs[k] / 100) * 48;
+      return { x: (74 + r * Math.cos(a)).toFixed(1), y: (74 + r * Math.sin(a)).toFixed(1) };
+    }) : [];
+
+    const trend = (st.trendData && st.trendData.length) ? st.trendData : [31,28,36,34,42,39,47,44,52,49,58,55,61,67];
+    const tpN = Math.max(1, trend.length - 1);
+    const tp = trend.map((v, i) => (i * (300 / tpN)).toFixed(1) + "," + (105 - v * 0.95).toFixed(1));
+    const catMeta = [
+      ["Prompt specificity","prompt_specificity"], ["Token conservation","token_conservation"],
+      ["Context management","context_management"], ["Verification","verification"],
+      ["Tool selection","tool_selection"], ["Frontier awareness","frontier_awareness"]
+    ];
+    const dashCatsSrc = st.catHits
+      ? (() => {
+          const max = Math.max(1, ...catMeta.map(([, k]) => st.catHits[k] || 0));
+          return catMeta.map(([name, k]) => {
+            const n = st.catHits[k] || 0;
+            return [name, Math.round((n / max) * 100), n + (n === 1 ? " hit" : " hits")];
+          });
+        })()
+      : [["Prompt specificity",82,"12 hits"],["Token conservation",64,"9 hits"],["Context management",51,"7 hits"],["Verification",38,"5 hits"],["Tool selection",24,"3 hits"],["Frontier awareness",14,"2 hits"]];
+    const dashCats = dashCatsSrc.map(([name, w, tag]) => ({
+      name, tag, w: w + "%",
+      color: w > 60 ? "oklch(0.7 0.18 32)" : w > 35 ? "oklch(0.78 0.14 85)" : "oklch(0.72 0.15 165)"
+    }));
+
+    const dev = st.devices;
+    const deviceList = [
+      {k:"lamp", label:"EMBER LAMP", on:dev.lamp},
+      {k:"buzzer", label:"DESK BUZZER", on:dev.buzzer},
+      {k:"bell", label:"BELL-BOT", on:dev.bell}
+    ].map(d => {
+      const hot = st.firing && d.on;
+      return {
+        label: d.label,
+        bg: hot ? "oklch(0.32 0.1 32)" : d.on ? "oklch(0.2 0.016 268)" : "oklch(0.17 0.014 268)",
+        border: hot ? "oklch(0.65 0.17 32)" : "oklch(0.28 0.02 268)",
+        dot: hot ? "oklch(0.8 0.19 32)" : d.on ? "oklch(0.6 0.11 155)" : "oklch(0.4 0.015 268)",
+        fg: hot ? "oklch(0.9 0.13 40)" : d.on ? "oklch(0.72 0.015 268)" : "oklch(0.45 0.015 268)",
+        anim: hot ? "gflash 0.5s ease-in-out 3" : "none"
+      };
+    });
+
+    const deviceRows = [
+      {k:"lamp", name:"Ember Lamp", meta:"hue://desk-1 · severity ≥ 1 · flash red"},
+      {k:"buzzer", name:"Desk Buzzer", meta:"usb://buzz0 · severity ≥ 2 · 400ms"},
+      {k:"bell", name:"Bell-Bot (servo + foam hand)", meta:"ws://bellbot.local · severity 3 · hits the bell, not you"},
+      {k:"slack", name:"Slack #shame", meta:"webhook · severity ≥ 2 · posts the roast"}
+    ].map(d => {
+      const t = this.toggleStyle(dev[d.k], accent);
+      return {...d, ...t, onToggle: this.toggleDevice(d.k), onTest: this.testDevice,
+        rowBg: dev[d.k] ? "oklch(0.165 0.016 268)" : "oklch(0.15 0.012 268)",
+        rowBorder: dev[d.k] ? "oklch(0.3 0.02 268)" : "oklch(0.24 0.018 268)"};
+    });
+
+    const intensityLabels = ["1 GENTLE","2 FIRM","3 SHARP","4 BRUTAL","5 UNHINGED"];
+    const intensityNotes = [
+      "Corrections only. No insults. For when someone is watching your screen.",
+      "Mild disappointment. Suitable for open-plan offices.",
+      "Direct. He will name the mistake and the file it lives in.",
+      "Mild profanity unlocked. He will question your judgement, never your identity.",
+      "Everything above, at volume, with the buzzer. Demo mode."
+    ];
+    const intensitySteps = intensityLabels.map((label, i) => {
+      const on = this.intensity === i + 1;
+      return {label, onClick: this.setIntensity(i + 1),
+        bg: on ? "oklch(0.28 0.09 40)" : "oklch(0.16 0.014 268)",
+        border: on ? accent : "oklch(0.29 0.02 268)",
+        fg: on ? "oklch(0.9 0.12 50)" : "oklch(0.6 0.015 268)"};
+    });
+
+    const volumeBars = Array.from({length:10}, (_, i) => ({
+      onClick: this.setVolume(i + 1),
+      bg: i < st.volume ? accent : "oklch(0.25 0.018 268)"
+    }));
+
+    const vf = st.voiceFlags;
+    const voiceToggles = [
+      {k:"stream", label:"Stream audio while generating", sub:"first syllable in ~380ms"},
+      {k:"cache", label:"Cache common roasts", sub:"repeat offences play instantly"},
+      {k:"fallback", label:"Fallback to local TTS", sub:"if the voice API fails mid-demo"}
+    ].map(t => ({...t, ...this.toggleStyle(vf[t.k], accent), onClick: this.toggleVoice(t.k)}));
+
+    const ratingIdx = st.ratingStars != null ? st.ratingStars : 3;
+    const ratingPips = [0,1,2,3,4].map(i => ({
+      bg: i < ratingIdx ? "linear-gradient(90deg,oklch(0.8 0.15 58),oklch(0.65 0.18 30))" : "oklch(0.22 0.018 268)",
+      border: i < ratingIdx ? "transparent" : "oklch(0.3 0.02 268)"
+    }));
+
+    const obSteps = [
+      {title:"Someone has to watch you work.", body:"Gordon reads the prompt you just sent, scores it against six categories, and tells you exactly what you left out. Loudly.",
+       items:[{mark:"1", title:"He only looks when you hit send", sub:"no continuous recording, ever"},
+              {mark:"2", title:"Every insult ships with a fix", sub:"roast → diagnosis → lesson → rewritten prompt"},
+              {mark:"3", title:"One key pauses him", sub:"⌥⇧G, or the button in the menu bar"}]},
+      {title:"Choose what he's allowed to see.", body:"Gordon captures the active window only at the moment a prompt is submitted, and only in the apps you tick here.",
+       items:[{mark:"✓", title:"Clyde · chat.clyde.dev", sub:"browser extension · prompt + model + screenshot"},
+              {mark:"✓", title:"Terminal", sub:"active window only, on submit"},
+              {mark:"—", title:"Everything else", sub:"invisible to Gordon"}]},
+      {title:"Pick your punishment.", body:"Severity 3 fires a physical device. It hits a bell. It does not hit you — that's in the non-goals, in writing.",
+       items:[{mark:"✓", title:"Ember Lamp", sub:"flashes red on any violation"},
+              {mark:"✓", title:"Desk Buzzer", sub:"severity 2 and above"},
+              {mark:"—", title:"Bell-Bot", sub:"pair later in Settings → Devices"}]}
+    ];
+    const ob = obSteps[st.onboardStep - 1];
+
+    const monitoring = !st.paused;
+    return {
+      // menubar / monitoring
+      monitorLabel: monitoring ? "WATCHING" : "PAUSED",
+      monitorDot: monitoring ? "oklch(0.75 0.16 32)" : "oklch(0.62 0.015 268)",
+      monitorChipBg: monitoring ? "oklch(0.26 0.07 32)" : "oklch(0.21 0.016 268)",
+      monitorChipBorder: monitoring ? "oklch(0.45 0.1 32)" : "oklch(0.3 0.02 268)",
+      pauseLabel: monitoring ? "PAUSE ⌥⇧G" : "RESUME ⌥⇧G",
+      togglePause: this.togglePause,
+      openDash: this.openPanel("dashboard"),
+      openPersona: this.openPanel("personality"),
+
+      // tool window
+      toolModel: "clyde-mini · ctx 8k",
+      tokenMeter: "session · 41,208 tokens",
+      toolThinking: st.toolThinking,
+      messages: st.messages.map(m => ({
+        text: m.text,
+        initial: m.who === "you" ? "YOU" : "CL",
+        color: m.who === "you" ? "oklch(0.88 0.01 268)" : "oklch(0.68 0.015 268)",
+        avatarBg: m.who === "you" ? "oklch(0.26 0.02 268)" : "oklch(0.22 0.04 268)",
+        avatarBorder: m.who === "you" ? "oklch(0.36 0.02 268)" : "oklch(0.34 0.05 268)",
+        avatarFg: m.who === "you" ? "oklch(0.75 0.015 268)" : "oklch(0.7 0.08 268)",
+        op: m.who === "you" ? 1 : 0.85
+      })),
+      presets: [
+        {label:"token dump", key:"tokens"},
+        {label:"\"make this work\"", key:"vague"},
+        {label:"outdated model", key:"outdated"},
+        {label:"an actually good one", key:"good"}
+      ].map(x => ({label:x.label, onClick:this.usePreset(x.key),
+        bg:"oklch(0.19 0.016 268)", border:"oklch(0.3 0.02 268)", fg:"oklch(0.68 0.015 268)"})),
+      draft: st.draft,
+      onDraft: this.onDraft,
+      send: this.send,
+      draftMeta: st.draft ? (st.draft.trim().split(/\s+/).length + " words · ~" + Math.round(st.draft.length / 3.6) + " tokens") : "gordon is reading over your shoulder",
+
+      // overlay
+      overlayWidth: cur ? "418px" : "330px",
+      showDevices: showDev,
+      deviceList,
+      cardBorder: st.mode === "verdict" ? "oklch(0.42 0.09 40)" : "oklch(0.3 0.02 268)",
+      cardAnim: st.mode === "verdict" ? "gpop 0.42s cubic-bezier(.2,1.2,.3,1)" : "none",
+      headTint: speaking ? "oklch(0.3 0.09 40 / 0.6)" : "oklch(0.22 0.02 268 / 0.5)",
+      personaName: p.name,
+      personaVoice: st.paused ? "MUTED" : "11LABS · " + p.voice.split("· ")[1].replace(" (original)", "").toUpperCase(),
+      bars, obBars,
+      statusLine: st.paused ? "PAUSED — HE IS SULKING" : st.mode === "thinking" ? "SCORING YOUR PROMPT…" : st.mode === "verdict" ? (st.speaking ? "SPEAKING · STREAMING AUDIO" : "AWAITING YOUR MOVE") : "LISTENING",
+      statusFg: st.mode === "verdict" ? "oklch(0.82 0.14 45)" : "oklch(0.52 0.015 268)",
+      dismiss: this.dismiss,
+
+      hasVerdict: st.mode === "verdict" && !!cur,
+      idleFooter: st.mode !== "verdict",
+      idleQuip: st.paused ? "Paused. Nothing is being captured. Enjoy your mediocrity." : st.mode === "thinking" ? "Reading your prompt. This won't take long — there isn't much of it." : "Send a prompt. I'll tell you what's wrong with it.",
+
+      score: cur ? cur.score : 0,
+      scoreColor,
+      verdictLabel: cur ? cur.verdict : "",
+      catRows, radarPts, radarDots,
+      radarFill: cur && cur.score >= 75 ? "oklch(0.72 0.15 165 / 0.2)" : "oklch(0.72 0.18 32 / 0.2)",
+      radarStroke: cur && cur.score >= 75 ? "oklch(0.78 0.15 165)" : "oklch(0.78 0.17 34)",
+      ring1: this.hex(74, 74, 20), ring2: this.hex(74, 74, 38), ring3: this.hex(74, 74, 56),
+      accent, roastBg: "oklch(0.22 0.045 36)",
+      roast: cur ? cur.roast : "",
+      diagnosis: cur ? cur.diagnosis : "",
+      lesson: cur ? cur.lesson : "",
+      improved: cur ? cur.improved : "",
+      hasSource: !!(cur && cur.source),
+      sourceText: cur && cur.source ? cur.source.text : "",
+      sourceDate: cur && cur.source ? cur.source.date : "",
+      sourceConfidence: cur && cur.source ? cur.source.conf : "",
+      copyFix: this.copyFix,
+      copyLabel: st.copied ? "COPIED ✓" : "COPY",
+      useFix: this.useFix,
+      loggedLine: cur ? (cur.severity > 0 ? "logged → " + cur.cat + " · " + cur.action : "nothing logged. shame.") : "",
+
+      // panel
+      panelOpen: !!st.panel,
+      closePanel: this.closePanel,
+      tabs: [["dashboard","Kitchen"],["personality","Personalities"],["settings","Settings & Privacy"]].map(([k, label]) => ({
+        label, onClick: this.openPanel(k),
+        bg: st.tab === k ? "oklch(0.26 0.02 268)" : "transparent",
+        fg: st.tab === k ? "oklch(0.94 0.01 268)" : "oklch(0.6 0.015 268)"
+      })),
+      tabDash: st.tab === "dashboard",
+      tabPersona: st.tab === "personality",
+      tabSettings: st.tab === "settings",
+      tabPrivacy: st.tab === "privacy",
+
+      ratingPips, ratingName: st.ratingLabel || "Line Cook",
+      ratingNote: "Two more clean days and he'll promote you to Chef de Partie. He will not be nice about it.",
+      dailySummary: st.dailyText
+        ? st.dailyText.split("\n")[0]
+        : st.todayCount === 0
+        ? "Zero interruptions. Either you've improved or you've stopped working. I know which one I'd bet on."
+        : "You were yelled at " + st.todayCount + " times today. Unfortunately, this counts as progress.",
+      metrics: [
+        {label:"YELLED AT TODAY", value: st.todayCount, sub:"since midnight", color:"oklch(0.8 0.16 40)"},
+        {label:"AVG PROMPT SCORE", value: st.avgScore != null ? String(st.avgScore) : "67", sub:"last 14 days", color:"oklch(0.78 0.15 165)"},
+        {label:"TOKENS NOT WASTED", value: (st.saved / 1000).toFixed(1) + "k", sub:"est. from shortened prompts", color:"oklch(0.9 0.01 268)"},
+        {label:"WORST CATEGORY", value: st.worstCatLabel || "Specificity", sub:"most hits · 14 days", color:"oklch(0.8 0.14 85)"}
+      ],
+      dashCats,
+      trendLine: tp.join(" "),
+      trendArea: ("0,105 " + tp.join(" ") + " 300,105"),
+      trendDots: trend.map((v, i) => ({x:(i * (300 / 13)).toFixed(1), y:(105 - v * 0.95).toFixed(1)})),
+      trendNote: "31 → 67. He's still furious, just less often.",
+      history: st.history.map((h, i) => ({
+        ...h,
+        rowBg: i % 2 ? "transparent" : "oklch(0.165 0.016 268)",
+        catColor: h.cat === "SPECIFICITY" ? "oklch(0.78 0.16 32)" : h.cat === "TOKEN" ? "oklch(0.8 0.14 85)" : h.cat === "FRONTIER" ? "oklch(0.76 0.13 300)" : "oklch(0.72 0.1 210)",
+        scoreColor: h.score >= 60 ? "oklch(0.76 0.14 165)" : h.score >= 35 ? "oklch(0.8 0.14 85)" : "oklch(0.76 0.17 32)"
+      })),
+      clearHistory: this.clearHistory,
+
+      personaCards: this.personas.map(x => ({
+        name: x.name, initials: x.initials, voice: x.voice, line: x.line, swatch: x.swatch,
+        onClick: this.setPersona(x.id),
+        badge: x.id === p.id ? "ACTIVE" : x.badge === "ACTIVE" ? "INSTALLED" : x.badge,
+        badgeBg: x.id === p.id ? "oklch(0.32 0.1 40)" : "oklch(0.22 0.018 268)",
+        badgeFg: x.id === p.id ? "oklch(0.88 0.13 50)" : "oklch(0.6 0.015 268)",
+        bg: x.id === p.id ? "oklch(0.21 0.03 40)" : "oklch(0.185 0.016 268)",
+        border: x.id === p.id ? "oklch(0.5 0.1 40)" : "oklch(0.27 0.02 268)",
+        heat: [0,1,2,3,4].map(i => ({bg: i < x.heat ? "oklch(0.72 0.17 " + (60 - i * 9) + ")" : "oklch(0.25 0.018 268)"}))
+      })),
+
+      intensitySteps, intensityNote: intensityNotes[this.intensity - 1],
+      volumeBars, volumeLabel: (st.volume * 10) + "%",
+      voiceToggles, deviceRows,
+      webhookJson: '{\n  "event": "prompt_violation",\n  "category": "' + (cur ? cur.cat : "token_conservation") + '",\n  "severity": ' + (cur ? cur.severity : 3) + ',\n  "message": "' + (cur ? cur.catLabel.toLowerCase() : "repeated 4,000 tokens of context") + '"\n}',
+
+      privacyTitle: monitoring ? "Gordon is watching Clyde" : "Gordon is paused",
+      privacySub: monitoring ? "Captures the active window only when you press send. Nothing between." : "No capture, no scoring, no audio. He'll be here when you're ready to be humbled.",
+      privacyBg: monitoring ? "oklch(0.21 0.04 32)" : "oklch(0.185 0.016 268)",
+      privacyBorder: monitoring ? "oklch(0.42 0.08 32)" : "oklch(0.28 0.02 268)",
+      pauseBtnBg: monitoring ? "oklch(0.26 0.02 268)" : "linear-gradient(135deg,oklch(0.74 0.16 52),oklch(0.63 0.19 28))",
+      pauseBtnFg: monitoring ? "oklch(0.9 0.01 268)" : "oklch(0.15 0.03 40)",
+      pauseBtnLabel: monitoring ? "Pause monitoring" : "Resume monitoring",
+      appRows: [
+        {name:"Clyde · chat.clyde.dev", state:"ON SUBMIT", fg:"oklch(0.74 0.13 165)"},
+        {name:"Terminal", state:"ON SUBMIT", fg:"oklch(0.74 0.13 165)"},
+        {name:"Editor", state:"ASK EACH TIME", fg:"oklch(0.78 0.13 85)"},
+        {name:"Everything else", state:"NEVER", fg:"oklch(0.55 0.015 268)"}
+      ],
+      privacyFacts: [
+        {dot:"oklch(0.72 0.15 165)", text:"Screenshots are scored in memory and discarded — nothing is written to disk by default."},
+        {dot:"oklch(0.72 0.15 165)", text:"Keys, tokens and passwords are redacted before the prompt leaves your machine."},
+        {dot:"oklch(0.72 0.15 165)", text:"Only the roast text is sent to the voice API — never your code."},
+        {dot:"oklch(0.78 0.14 85)", text:"Prompt text + score are stored locally so the dashboard can show progress."},
+        {dot:"oklch(0.72 0.15 165)", text:"Delete all history from the Kitchen at any time. It's one button and he can't stop you."}
+      ],
+      redactionSample: 'POST /v1/orders\nAuthorization: Bearer ████████████████ [redacted: api_key]\nuser_email: ██████████████ [redacted: pii]\nbody: { "cartId": "c_8812", "guest": true }',
+
+      // onboarding
+      onboarding: !st.onboarded,
+      obStep: st.onboardStep,
+      obTitle: ob.title, obBody: ob.body,
+      obItems: ob.items.map(i => ({...i, dot: i.mark === "—" ? "oklch(0.4 0.015 268)" : "oklch(0.78 0.15 55)"})),
+      obNext: this.obNext, obBack: this.obBack,
+      obNextLabel: st.onboardStep >= 3 ? "Let him in" : "Continue",
+      obBackLabel: st.onboardStep <= 1 ? "Skip" : "Back"
+    };
+  }
+}
+</script>
+</body>
+</html>

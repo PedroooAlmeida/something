@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="currentColor">
+  <title>Gordon</title>
+  <mask id="cut">
+    <rect x="0" y="0" width="120" height="120" fill="#000"></rect>
+  <circle cx="38" cy="42" r="19" fill="#fff"></circle>
+  <circle cx="60" cy="33" r="22" fill="#fff"></circle>
+  <circle cx="82" cy="42" r="19" fill="#fff"></circle>
+  <rect x="30" y="46" width="60" height="26" fill="#fff"></rect>
+  <rect x="28" y="70" width="64" height="20" rx="6" fill="#fff"></rect>
+  <rect x="36" y="76" width="5" height="8" rx="2.5" fill="#000"></rect>
+  <rect x="46" y="73" width="5" height="14" rx="2.5" fill="#000"></rect>
+  <rect x="56" y="70.5" width="5" height="19" rx="2.5" fill="#000"></rect>
+  <rect x="66" y="74" width="5" height="12" rx="2.5" fill="#000"></rect>
+  <rect x="76" y="77" width="5" height="6" rx="2.5" fill="#000"></rect>
+  </mask>
+  <rect x="0" y="0" width="120" height="120" fill="currentColor" mask="url(#cut)"></rect>
+</svg>

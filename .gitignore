@@ -4,6 +4,10 @@ __pycache__/
 *.db
 node_modules/
 dist/
+electron-shell/dist/
 .env
 .DS_Store
 *.log
+npm-debug.log
+roast_events/
+audio_cache/
