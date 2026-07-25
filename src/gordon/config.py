@@ -77,10 +77,12 @@ AUDIO_READY_TIMEOUT_S = 10.0
 LLM_ATTEMPTS = 2  # one retry on unparseable model output
 SYNTH_DEFAULT_SEVERITY = 2  # severity streams in AFTER the roast; synth can't wait for it
 SAFE_FALLBACK_ROAST = "That prompt needs work. Let's fix it."  # spoken if safety empties the roast
-ACTION_BY_SEVERITY: dict[int, str] = {1: "toast", 2: "desk_buzzer", 3: "desk_buzzer"}
+# action names per Person 4's platform enum (smart_light / desk_buzzer / bell_bot)
+ACTION_BY_SEVERITY: dict[int, str] = {1: "smart_light", 2: "desk_buzzer", 3: "bell_bot"}
 
 # --- knowledge ---
 KNOWLEDGE_MAX_MATCHES = 3
+KNOWLEDGE_CITATION_CONFIDENCE = 0.9  # keyword match is verbatim, not semantic
 
 # --- input hardening ---
 MAX_SCREENSHOT_BYTES = 8_000_000  # skip larger; also bounds the sync read

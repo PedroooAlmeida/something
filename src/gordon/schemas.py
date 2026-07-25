@@ -83,6 +83,15 @@ class ClassifierVerdict(BaseModel):
         return v if v in CATEGORIES else None
 
 
+class SourceCitation(BaseModel):
+    """Knowledge-record citation surfaced to Person 4's platform."""
+
+    text: str
+    date: str
+    confidence: float = Field(ge=0.0, le=1.0)
+    url: str
+
+
 class TimingMs(BaseModel):
     roast_ready: int
     total: int
@@ -107,3 +116,4 @@ class EngineResponse(BaseModel):
     audio_status: AudioStatus
     action: str
     timing_ms: TimingMs
+    source: SourceCitation | None = None  # set when a knowledge record informed the verdict

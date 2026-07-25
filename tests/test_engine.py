@@ -71,7 +71,8 @@ async def test_full_pipeline_contract(monkeypatch, synth_calls) -> None:
     }
     assert response.overall_score == 22
     assert response.should_interrupt is True
-    assert response.action == "desk_buzzer"
+    assert response.action == "bell_bot"  # severity 3 per platform action enum
+    assert response.source is None  # no knowledge record matched "Make this work"
     assert response.audio_status == "streaming"
     assert response.audio_url == f"/audio/{response.audio_cache_key}"
     assert response.timing_ms.total >= response.timing_ms.roast_ready >= 0
@@ -145,6 +146,17 @@ async def test_no_interrupt_means_no_action(monkeypatch, synth_calls) -> None:
     monkeypatch.setattr(engine.llm, "stream_llm", _mock_stream(payload))
     response = await engine.evaluate(_event("A genuinely precise prompt"))
     assert response.action == "none"
+
+
+async def test_source_citation_populated_on_knowledge_match(monkeypatch, synth_calls) -> None:
+    monkeypatch.setattr(engine.llm, "stream_llm", _mock_stream(GOOD_PAYLOAD))
+    response = await engine.evaluate(
+        _event("Write a React class component using componentWillMount"), with_audio=False
+    )
+    assert response.source is not None
+    assert response.source.url.startswith("https://")
+    assert response.source.date == "2024-12-05"
+    assert 0.0 <= response.source.confidence <= 1.0
 
 
 async def test_identical_input_same_scores_different_personality(monkeypatch, synth_calls) -> None:

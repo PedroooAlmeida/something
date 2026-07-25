@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from gordon import config, knowledge, llm, parsing, personalities, rubric, safety, voice
 from gordon.personalities import Personality
-from gordon.schemas import CaptureEvent, EngineResponse, Evaluation, TimingMs
+from gordon.schemas import CaptureEvent, EngineResponse, Evaluation, SourceCitation, TimingMs
 
 
 async def evaluate(event: CaptureEvent, *, with_audio: bool = True) -> EngineResponse:
@@ -60,7 +60,9 @@ async def evaluate(event: CaptureEvent, *, with_audio: bool = True) -> EngineRes
 
     evaluation = _scrub(evaluation, safety_context, event.event_id)
 
-    response = _respond(event, personality, evaluation, spoken_roast, handle, roast_ready_ms, t0)
+    response = _respond(
+        event, personality, evaluation, spoken_roast, handle, roast_ready_ms, t0, records
+    )
     print(
         f"[engine] event={event.event_id} personality={personality.id} "
         f"score={response.overall_score} roast_ready={response.timing_ms.roast_ready}ms "
@@ -113,9 +115,19 @@ def _respond(
     handle: voice.SynthHandle | None,
     roast_ready_ms: int | None,
     t0: float,
+    records: list[dict] | None = None,
 ) -> EngineResponse:
     total_ms = _ms_since(t0)
     action = config.ACTION_BY_SEVERITY.get(evaluation.severity, "desk_buzzer")
+    source = None
+    if records:
+        top = records[0]
+        source = SourceCitation(
+            text=f"{top['technology']}: {top['what_changed']}",
+            date=top["release_date"],
+            confidence=config.KNOWLEDGE_CITATION_CONFIDENCE,
+            url=top["source_url"],
+        )
     return EngineResponse(
         roast=spoken_roast,
         overall_score=evaluation.overall_score,
@@ -136,6 +148,7 @@ def _respond(
             roast_ready=roast_ready_ms if roast_ready_ms is not None else total_ms,
             total=total_ms,
         ),
+        source=source,
     )
 
 

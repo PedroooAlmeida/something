@@ -81,7 +81,9 @@ def test_response_serializes_all_contract_keys() -> None:
         "roast", "overall_score", "primary_category", "category_scores", "diagnosis",
         "lesson", "improved_prompt", "severity", "should_interrupt", "personality_id",
         "voice_id", "audio_url", "audio_cache_key", "audio_status", "action", "timing_ms",
+        "source",
     }
+    assert payload["source"] is None  # additive field, absent unless knowledge matched
     assert payload["timing_ms"] == {"roast_ready": 900, "total": 2100}
 
 

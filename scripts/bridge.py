@@ -1,8 +1,9 @@
-"""Bridge: capture events -> Gordon engine.
+"""LOCAL DEBUG ONLY: capture events -> engine directly, skipping the platform.
 
-Watches the capture component's roast_events/ directory (written by
-capture.emitter.Emitter) and forwards each event to the engine's
-POST /evaluate as a CaptureEvent. Prints the roast and audio URL.
+The canonical demo path is backend/scripts/capture_bridge.py (capture ->
+/api/events); the backend calls this engine's /evaluate itself (set
+GORDON_ENGINE_URL) so the overlay WS, dashboard, webhooks, and buzzer all
+fire. Use this script only to exercise the engine without the backend.
 
 Run the engine first:   uvicorn gordon.api:app --port 8001
 Then:                    python scripts/bridge.py [--events-dir roast_events] [--engine http://127.0.0.1:8001]
