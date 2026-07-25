@@ -1,0 +1,20 @@
+# secrets
+.env
+
+# audio cache
+audio_cache/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+dist/
+uv.lock
+
+# partial downloads
+*.part
+
+# os
+.DS_Store
