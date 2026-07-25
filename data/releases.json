@@ -1,0 +1,157 @@
+[
+  {
+    "technology": "Python",
+    "what_changed": "Python 3.14.0 (released 2025-10-07) made the free-threaded (no-GIL) build officially supported (PEP 779) and added template string literals (t-strings, PEP 750), deferred annotation evaluation (PEP 649), multiple interpreters (PEP 734), and an experimental JIT.",
+    "release_date": "2025-10-07",
+    "source_url": "https://www.python.org/downloads/release/python-3140/",
+    "old_option": "Python 3.9/3.10-era patterns (GIL-bound threading, f-string-only string processing)",
+    "new_option": "Python 3.14 (officially supported free-threaded build, t-string template literals)",
+    "keywords": [
+      "python 3.9",
+      "python 3.10",
+      "python 3.11",
+      "python 3.12",
+      "gil",
+      "global interpreter lock"
+    ]
+  },
+  {
+    "technology": "Create React App (React)",
+    "what_changed": "The React team officially deprecated Create React App on 2025-02-14, recommending new apps use a framework (Next.js, React Router, Expo) or a build tool like Vite, Parcel, or Rsbuild instead.",
+    "release_date": "2025-02-14",
+    "source_url": "https://react.dev/blog/2025/02/14/sunsetting-create-react-app",
+    "old_option": "npx create-react-app",
+    "new_option": "Vite (npm create vite) or a framework like Next.js / React Router / Expo",
+    "keywords": [
+      "create-react-app",
+      "npx create-react-app",
+      "react-scripts",
+      "cra app",
+      "eject"
+    ]
+  },
+  {
+    "technology": "React 19",
+    "what_changed": "React 19 (stable Dec 5, 2024) added Actions (useActionState, useFormStatus, useOptimistic), the use() API, and ref as a regular prop, cementing function components with hooks as the standard over legacy class components and lifecycle methods like componentWillMount (deprecated since React 16.3 and removed as UNSAFE_-unprefixed names).",
+    "release_date": "2024-12-05",
+    "source_url": "https://react.dev/blog/2024/12/05/react-19",
+    "old_option": "class components with legacy lifecycle methods (componentWillMount, forwardRef, useFormState)",
+    "new_option": "function components with hooks: Actions/useActionState, use(), ref as prop",
+    "keywords": [
+      "componentwillmount",
+      "class component",
+      "extends react.component",
+      "forwardref",
+      "componentwillreceiveprops"
+    ]
+  },
+  {
+    "technology": "Pydantic v2",
+    "what_changed": "Pydantic v2.0, released June 30, 2023, rewrote the validation core in Rust and deprecated v1 APIs such as @validator/@root_validator and class Config in favor of @field_validator/@model_validator and model_config = ConfigDict(...).",
+    "release_date": "2023-06-30",
+    "source_url": "https://pydantic.dev/articles/pydantic-v2-final",
+    "old_option": "@validator + class Config (Pydantic v1 API)",
+    "new_option": "@field_validator + model_config = ConfigDict(...) (Pydantic v2 API)",
+    "keywords": [
+      "@validator",
+      "@root_validator",
+      "class config",
+      "pydantic v1",
+      "pydantic==1",
+      ".dict()"
+    ]
+  },
+  {
+    "technology": "Tailwind CSS v4",
+    "what_changed": "Tailwind CSS v4.0 replaced the JavaScript tailwind.config.js configuration with CSS-first configuration via @theme in your stylesheet, along with a rewritten high-performance engine and a single-line @import \"tailwindcss\" setup.",
+    "release_date": "2025-01-22",
+    "source_url": "https://tailwindcss.com/blog/tailwindcss-v4",
+    "old_option": "tailwind.config.js (JavaScript config, @tailwind directives)",
+    "new_option": "CSS-first configuration with @theme and @import \"tailwindcss\"",
+    "keywords": [
+      "tailwind.config.js",
+      "tailwind v3",
+      "tailwindcss v3",
+      "@tailwind base",
+      "module.exports = {",
+      "content: [\"./src"
+    ]
+  },
+  {
+    "technology": "FastAPI",
+    "what_changed": "FastAPI 0.93.0 added lifespan async context manager support for startup/shutdown, deprecating the @app.on_event(\"startup\"/\"shutdown\") event handlers.",
+    "release_date": "2023-03-07",
+    "source_url": "https://fastapi.tiangolo.com/release-notes/",
+    "old_option": "@app.on_event(\"startup\") / @app.on_event(\"shutdown\") event handlers",
+    "new_option": "lifespan async context manager passed as FastAPI(lifespan=...)",
+    "keywords": [
+      "on_event",
+      "app.on_event",
+      "startup event",
+      "shutdown event",
+      "@app.on_event(\"startup\")"
+    ]
+  },
+  {
+    "technology": "OpenAI GPT-5",
+    "what_changed": "OpenAI released GPT-5 on August 7, 2025, a unified flagship model that became the default in ChatGPT and the API, superseding the GPT-4o/GPT-4 family (and legacy gpt-3.5-turbo) for new development.",
+    "release_date": "2025-08-07",
+    "source_url": "https://openai.com/index/introducing-gpt-5/",
+    "old_option": "gpt-4o",
+    "new_option": "gpt-5",
+    "keywords": [
+      "gpt-4o",
+      "gpt-4o-mini",
+      "gpt-4-turbo",
+      "gpt-3.5-turbo",
+      "gpt-4"
+    ]
+  },
+  {
+    "technology": "uv (Astral Python package manager)",
+    "what_changed": "Astral's uv (first released Feb 2024 as a Rust-based pip replacement) expanded on 2024-08-20 into a unified Python packaging tool (\"Cargo for Python\") \u2014 uv run/lock/sync, uv tool/uvx, and uv python install \u2014 replacing pip, virtualenv, pipx, pyenv, and requirements.txt-style workflows.",
+    "release_date": "2024-08-20",
+    "source_url": "https://astral.sh/blog/uv-unified-python-packaging",
+    "old_option": "pip + virtualenv + requirements.txt (and setup.py-based workflows)",
+    "new_option": "uv (uv add, uv sync, uv run, uv lock with pyproject.toml + uv.lock)",
+    "keywords": [
+      "setup.py",
+      "requirements.txt",
+      "virtualenv",
+      "pip install",
+      "pip freeze",
+      "python -m venv"
+    ]
+  },
+  {
+    "technology": "ESLint",
+    "what_changed": "ESLint v9.0.0 made flat config (eslint.config.js) the default configuration format and officially deprecated the legacy eslintrc format.",
+    "release_date": "2024-04-05",
+    "source_url": "https://eslint.org/blog/2024/04/eslint-v9.0.0-released/",
+    "old_option": ".eslintrc (eslintrc config format)",
+    "new_option": "eslint.config.js (flat config)",
+    "keywords": [
+      ".eslintrc",
+      "eslintrc.json",
+      "eslintrc.js",
+      "eslintrc.yml",
+      ".eslintignore"
+    ]
+  },
+  {
+    "technology": "Anthropic Claude models",
+    "what_changed": "Anthropic released Claude Opus 5 (model ID claude-opus-5), now the newest generally-available Claude model at $5/$25 per MTok, superseding retired Claude 3.x models like claude-3-5-sonnet and claude-3-opus.",
+    "release_date": "2026-07-24",
+    "source_url": "https://www.anthropic.com/news/claude-opus-5",
+    "old_option": "claude-3-5-sonnet / claude-3-opus",
+    "new_option": "claude-opus-5",
+    "keywords": [
+      "claude-3-5-sonnet",
+      "claude-3-opus",
+      "claude 3.5 sonnet",
+      "claude 3 opus",
+      "claude-3-5-sonnet-20241022",
+      "claude-3-opus-20240229"
+    ]
+  }
+]

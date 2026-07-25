@@ -1,13 +1,30 @@
+# secrets
+.env
+
+# python
 __pycache__/
 *.pyc
 .venv/
-*.db
-node_modules/
+.pytest_cache/
+*.egg-info/
 dist/
+uv.lock
+*.db
+
+# node / electron
+node_modules/
 electron-shell/dist/
-.env
+npm-debug.log
+
+# capture events (Person 2 emitter output)
+roast_events/
+
+# audio cache
+audio_cache/
+
+# partial downloads
+*.part
+
+# os / misc
 .DS_Store
 *.log
-npm-debug.log
-roast_events/
-audio_cache/
