@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gordon — the AI coding coach that yells at you</title>
+<link rel="stylesheet" href="fonts.css" />
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(1200px 700px at 78% 8%, oklch(0.24 0.05 292 / 0.55), transparent),
+      radial-gradient(900px 600px at 10% 92%, oklch(0.24 0.06 32 / 0.40), transparent),
+      oklch(0.13 0.014 268);
+    color: oklch(0.94 0.008 268);
+    font-family: 'Space Grotesk', -apple-system, system-ui, sans-serif;
+    min-height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 24px;
+  }
+  main { width: 100%; max-width: 640px; text-align: center; }
+
+  /* signature: Gordon has no face — the waveform is the character */
+  .wave { display: flex; align-items: center; justify-content: center; gap: 3px; height: 62px; margin-bottom: 30px; }
+  .wave span {
+    width: 4px; border-radius: 2px;
+    background: linear-gradient(180deg, oklch(0.85 0.15 58), oklch(0.62 0.2 26));
+    animation: pulse var(--d) ease-in-out var(--delay) infinite alternate;
+  }
+  @keyframes pulse { from { transform: scaleY(.5); opacity: .75; } to { transform: scaleY(1); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .wave span { animation: none; } }
+
+  .eyebrow {
+    font: 500 11px/1 'IBM Plex Mono', monospace; letter-spacing: .32em;
+    color: oklch(0.72 0.15 52); text-transform: uppercase; margin-bottom: 20px;
+  }
+  h1 {
+    font: 700 clamp(64px, 16vw, 128px)/0.92 'Space Grotesk', sans-serif;
+    letter-spacing: -0.03em; margin-bottom: 22px;
+    background: linear-gradient(180deg, oklch(0.96 0.008 268), oklch(0.78 0.06 40));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .tag {
+    font: 400 clamp(15px, 2.4vw, 18px)/1.55 'Space Grotesk', sans-serif;
+    color: oklch(0.72 0.012 268); max-width: 480px; margin: 0 auto 38px; text-wrap: pretty;
+  }
+  .tag b { color: oklch(0.9 0.01 268); font-weight: 600; }
+
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 44px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px; padding: 15px 26px; border-radius: 12px;
+    font: 600 15px/1 'Space Grotesk', sans-serif; text-decoration: none; cursor: pointer;
+    transition: filter .16s ease, transform .16s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.primary { color: #1a0d08; background: linear-gradient(135deg, oklch(0.8 0.15 55), oklch(0.66 0.2 30)); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { color: oklch(0.86 0.012 268); background: oklch(0.18 0.016 268); border: 1px solid oklch(0.32 0.02 268); }
+  .btn.ghost:hover { border-color: oklch(0.5 0.08 40); }
+  .btn small { font: 400 11px/1 'IBM Plex Mono', monospace; color: oklch(0.5 0.03 40); }
+
+  .points { display: flex; gap: 26px; justify-content: center; flex-wrap: wrap; }
+  .point { font: 400 10.5px/1.5 'IBM Plex Mono', monospace; letter-spacing: .06em; color: oklch(0.58 0.015 268); }
+  .point b { color: oklch(0.78 0.14 52); font-weight: 500; }
+
+  .note {
+    margin-top: 34px; font: 400 11px/1.6 'IBM Plex Mono', monospace; color: oklch(0.5 0.015 268);
+    max-width: 440px; margin-inline: auto;
+  }
+  .note a { color: oklch(0.72 0.1 210); }
+</style>
+</head>
+<body>
+  <main>
+    <div class="wave" id="wave" aria-hidden="true"></div>
+    <div class="eyebrow">AI Coding Coach</div>
+    <h1>GORDON</h1>
+    <p class="tag">
+      He watches how you prompt your AI tools. The moment you get lazy, he appears in the corner of
+      your screen and tells you <b>exactly what you left out</b> — roast, diagnosis, and a rewritten
+      prompt. Loudly.
+    </p>
+
+    <div class="cta-row">
+      <a class="btn primary" href="./design_handoff_gordon_overlay/Gordon.dc.html">Try it in your browser →</a>
+      <a class="btn ghost" href="https://github.com/abhay-lal/something/releases/latest" id="downloadBtn">Download for Mac<small>right-click → Open</small></a>
+    </div>
+
+    <div class="points">
+      <span class="point">Scores every prompt <b>0–100</b></span>
+      <span class="point">Roast → diagnosis → <b>fix</b></span>
+      <span class="point">Six categories, <b>one verdict</b></span>
+    </div>
+
+    <p class="note">
+      The browser version is the full live experience minus the always-on-top overlay. The Mac
+      download is the real desktop app — the popup floats over Cursor, your terminal, anything.
+    </p>
+  </main>
+
+<script>
+  // waveform signature — same seed the app uses, so the brand is one system
+  const seed = [.42,.78,.31,.95,.55,.70,.38,.88,.62,.44,.81,.29,.72,.50,.93,.35,.66,.84,
+                .40,.58,.76,.33,.90,.47,.69,.53,.86,.36,.74,.60,.45,.82,.39,.65];
+  const wave = document.getElementById('wave');
+  seed.forEach((s, i) => {
+    const b = document.createElement('span');
+    b.style.height = Math.max(6, s * 40 + (i % 3) * 3) + 'px';
+    b.style.setProperty('--d', (0.5 + (i % 5) * 0.14) + 's');
+    b.style.setProperty('--delay', ((i % 7) * 0.07) + 's');
+    wave.appendChild(b);
+  });
+</script>
+</body>
+</html>
