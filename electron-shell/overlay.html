@@ -326,7 +326,13 @@
   });
 
   // ── Live backend: real verdicts arrive over the WebSocket ──
-  const WS_URL = 'wss://gordon-platform.fly.dev/ws/overlay';
+  // Local ./start.sh stack first; hosted platform as fallback. A URL that
+  // successfully opened is retried on drop; one that never opened rotates.
+  const WS_CANDIDATES = [
+    'ws://127.0.0.1:8765/ws/overlay',
+    'wss://gordon-platform.fly.dev/ws/overlay',
+  ];
+  let wsIndex = 0;
   const CAT_MAP = {
     prompt_specificity: 'specificity', token_conservation: 'tokens', frontier_awareness: 'frontier',
     tool_selection: 'tool', context_management: 'context', verification: 'verify',
@@ -376,8 +382,10 @@
 
   let paused = false;
   function connect() {
-    let ws;
-    try { ws = new WebSocket(WS_URL); } catch { setTimeout(connect, 3000); return; }
+    const url = WS_CANDIDATES[wsIndex % WS_CANDIDATES.length];
+    let ws, opened = false;
+    try { ws = new WebSocket(url); } catch { wsIndex++; setTimeout(connect, 3000); return; }
+    ws.onopen = () => { opened = true; console.log('[overlay] connected:', url); };
     ws.onmessage = (e) => {
       let msg; try { msg = JSON.parse(e.data); } catch { return; }
       if (msg.type === 'coaching_response' && msg.evaluation) {
@@ -389,7 +397,10 @@
         setPersona(msg.personality_id); // header updates the moment persona changes
       }
     };
-    ws.onclose = () => setTimeout(connect, 3000);   // auto-reconnect
+    ws.onclose = () => {
+      if (!opened) wsIndex++;                       // never opened -> try next URL
+      setTimeout(connect, opened ? 1000 : 1500);    // auto-reconnect
+    };
     ws.onerror = () => ws.close();
   }
   connect();
