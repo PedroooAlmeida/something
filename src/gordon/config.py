@@ -60,6 +60,7 @@ ELEVENLABS_BASE_URL = "https://api.elevenlabs.io"
 ELEVENLABS_MODEL_ID = "eleven_flash_v2_5"  # low-latency Flash tier; verify against docs (M1)
 ELEVENLABS_OUTPUT_FORMAT = "mp3_44100_128"
 ELEVENLABS_TIMEOUT_S = 20.0
+ELEVENLABS_MAX_CONCURRENCY = 2  # free tier allows 2 concurrent streams
 AUDIO_READY_POLL_S = 0.1  # /audio/{key} wait granularity while synthesis in flight
 AUDIO_READY_TIMEOUT_S = 10.0
 

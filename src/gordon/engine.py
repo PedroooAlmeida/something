@@ -56,6 +56,8 @@ async def evaluate(event: CaptureEvent, *, with_audio: bool = True) -> EngineRes
         roast_ready_ms = _ms_since(t0)
         spoken_roast, handle = _speak(evaluation.roast, safety_context, personality, with_audio)
 
+    evaluation = _scrub(evaluation, safety_context, event.event_id)
+
     response = _respond(event, personality, evaluation, spoken_roast, handle, roast_ready_ms, t0)
     print(
         f"[engine] event={event.event_id} personality={personality.id} "
@@ -73,13 +75,32 @@ def _speak(
     safe, dropped = safety.filter_text(roast, safety_context)
     for note in dropped:
         print(f"[safety] dropped from roast: {note}")
-    safe = safe.strip()
+    safe = safety.enforce_roast_budget(safe.strip())
     if not safe:
         safe = config.SAFE_FALLBACK_ROAST
     if not with_audio:
         return safe, None
     settings = personality.voice_settings(config.SYNTH_DEFAULT_SEVERITY)
     return safe, voice.start_synthesis(safe, personality.voice_id, settings)
+
+
+def _scrub(evaluation: Evaluation, safety_context: str, event_id: str) -> Evaluation:
+    """Anti-fabrication pass over the UI-facing prose fields (invariant 4).
+    The evaluation's own scores count as supplied context so 'that's a 15 on
+    specificity' survives; improved_prompt is detect-and-log only (stripping
+    sentences from a rewritten prompt would break it)."""
+    own_numbers = " ".join(
+        str(v)
+        for v in (evaluation.overall_score, evaluation.severity, *evaluation.category_scores.values())
+    )
+    context = f"{safety_context} {own_numbers}"
+    diagnosis, d_notes = safety.filter_text(evaluation.diagnosis, context)
+    lesson, l_notes = safety.filter_text(evaluation.lesson, context)
+    for note in d_notes + l_notes:
+        print(f"[safety] event={event_id} {note}")
+    for note in safety.detect_fabrications(evaluation.improved_prompt, context):
+        print(f"[safety] event={event_id} improved_prompt (kept, logged): {note}")
+    return evaluation.model_copy(update={"diagnosis": diagnosis, "lesson": lesson})
 
 
 def _respond(
