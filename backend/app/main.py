@@ -108,6 +108,22 @@ async def monitoring_resume():
     return {"paused": False}
 
 
+# -------------------------------------------------------------- personality --
+@app.get("/api/settings/personality")
+def personality_get():
+    return {"personality_id": db.get_setting("personality_id", "angry_chef")}
+
+
+@app.put("/api/settings/personality")
+async def personality_set(body: dict):
+    pid = (body.get("personality_id") or "").strip()
+    if not pid:
+        raise HTTPException(422, "personality_id required")
+    db.set_setting("personality_id", pid)
+    await hub.broadcast({"type": "personality", "personality_id": pid})
+    return {"personality_id": pid}
+
+
 # -------------------------------------------------------------- event intake --
 def _normalize(evaluation: dict) -> dict:
     """Person 3's engine never emits severity 0 — 'leave the user alone' is
@@ -143,6 +159,10 @@ async def receive_event(event: CaptureEvent):
 
     data = event.model_dump()
     data["prompt_text"], redactions = redact(data["prompt_text"])
+    # capture services that don't know the selected personality inherit the
+    # overlay's persisted choice
+    if data.get("personality_id") in (None, "", "angry_chef"):
+        data["personality_id"] = db.get_setting("personality_id", "angry_chef")
     db.insert_event(data)
 
     evaluation = await _process(data)
