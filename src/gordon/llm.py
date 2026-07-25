@@ -80,5 +80,12 @@ async def stream_llm(
         async with _get_client().beta.messages.stream(**kwargs) as stream:
             async for text in stream.text_stream:
                 yield text
+            final = await stream.get_final_message()
+            if final.stop_reason == "refusal":
+                details = getattr(final, "stop_details", None)
+                category = getattr(details, "category", None) if details else None
+                raise LLMError(f"model refused (category={category}) — even after fallback chain")
+            if final.stop_reason == "max_tokens":
+                print("[llm] warning: output truncated at max_tokens; recover_json will repair")
     except anthropic.APIError as exc:
         raise LLMError(f"evaluation model call failed: {exc}") from exc

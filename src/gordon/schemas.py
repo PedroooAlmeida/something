@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from gordon.config import CATEGORIES
+from gordon.config import CATEGORIES, SEVERITY_BANDS, SHOULD_INTERRUPT_MAX_SCORE
 
 AudioStatus = Literal["cached", "streaming", "fallback_system_tts", "unavailable"]
 
@@ -37,6 +37,20 @@ class Evaluation(BaseModel):
     improved_prompt: str
     severity: int = Field(ge=1, le=3)
     should_interrupt: bool
+
+    @model_validator(mode="before")
+    @classmethod
+    def derive_flags_if_truncated(cls, data: dict) -> dict:
+        """A truncated stream can lose trailing keys; severity and should_interrupt
+        are deterministic functions of overall_score, so derive rather than die."""
+        if isinstance(data, dict) and isinstance(data.get("overall_score"), int):
+            score = data["overall_score"]
+            if "severity" not in data:
+                low, high = SEVERITY_BANDS
+                data["severity"] = 3 if score < low else 2 if score < high else 1
+            if "should_interrupt" not in data:
+                data["should_interrupt"] = score < SHOULD_INTERRUPT_MAX_SCORE
+        return data
 
     @field_validator("category_scores")
     @classmethod

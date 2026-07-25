@@ -95,3 +95,19 @@ def test_bad_audio_status_rejected() -> None:
             audio_status="buffering", action="none",
             timing_ms=TimingMs(roast_ready=1, total=2),
         )
+
+
+def test_truncation_derives_severity_and_interrupt() -> None:
+    evaluation = Evaluation.model_validate({
+        "roast": "x", "overall_score": 21, "primary_category": "token_conservation",
+        "category_scores": SCORES, "diagnosis": "d", "lesson": "l", "improved_prompt": "i",
+    })
+    assert evaluation.severity == 3
+    assert evaluation.should_interrupt is True
+
+    good = Evaluation.model_validate({
+        "roast": "x", "overall_score": 85, "primary_category": "prompt_specificity",
+        "category_scores": SCORES, "diagnosis": "d", "lesson": "l", "improved_prompt": "i",
+    })
+    assert good.severity == 1
+    assert good.should_interrupt is False

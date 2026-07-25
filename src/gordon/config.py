@@ -39,7 +39,8 @@ EVAL_MODEL: str = os.environ.get("EVAL_MODEL", "claude-opus-5")
 # claude-opus-5 rejects sampling params (temperature 400s), so the spec's
 # "temperature ~0.9 for joke variance" is enforced by prompt in rubric.py instead.
 EVAL_EFFORT = "low"  # latency: roast must stream fast (invariant 1)
-EVAL_MAX_TOKENS = 1024
+EVAL_MAX_TOKENS = 2000  # roast+prose+improved_prompt; 1024 truncated long rewrites
+SEVERITY_BANDS = (30, 60)  # overall_score < 30 -> severity 3, < 60 -> 2, else 1
 EVAL_TIMEOUT_S = 30.0
 MAX_ROAST_WORDS = 35
 MAX_ROAST_SENTENCES = 2
