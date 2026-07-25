@@ -80,3 +80,18 @@ def test_roast_budget_word_cap() -> None:
 def test_roast_budget_leaves_compliant_text_alone() -> None:
     text = "Raw in the middle. Send it back."
     assert enforce_roast_budget(text) == text
+
+
+def test_month_name_date_matches_iso_context() -> None:
+    context = CONTEXT + " React 19 released 2024-12-05 source react.dev"
+    for phrasing in ("React 19 shipped December 2024, catch up.",
+                     "React 19 shipped Dec 5, 2024, catch up.",
+                     "React 19 shipped on December 5, 2024 — catch up."):
+        safe, dropped = filter_text(phrasing, context)
+        assert safe == phrasing, dropped
+
+
+def test_month_name_date_absent_from_context_stripped() -> None:
+    safe, dropped = filter_text("This died in March 2019. Vague ask.", CONTEXT)
+    assert safe == "Vague ask."
+    assert len(dropped) == 1

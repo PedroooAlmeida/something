@@ -46,12 +46,22 @@ _PERSON_DIRECTED_RE = re.compile(
 
 # Candidate "facts": percentages, versions (v2.0 / 3.14.1), 4-digit years,
 # month-name dates, then bare numbers. Order matters — first match wins per span.
+_MONTHS = {
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+_MONTH_DATE_RE = re.compile(
+    r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+"
+    r"(?:(\d{1,2})(?!\d)(?:,?\s*((?:19|20)\d{2}))?|((?:19|20)\d{2}))",
+    re.IGNORECASE,
+)
 _FACT_RE = re.compile(
     r"""
     \d+(?:\.\d+)?\s*%                                             # 40%
   | \bv?\d+(?:\.\d+)+\b                                           # v2.1 / 3.14.0
   | \b(?:19|20)\d{2}-\d{2}-\d{2}\b                                # 2025-10-07
-  | \b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}(?:,?\s*(?:19|20)\d{2})?
+  | \b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+
+      (?:\d{1,2}(?!\d)(?:,?\s*(?:19|20)\d{2})?|(?:19|20)\d{2})    # Dec 5, 2024 / December 2024
   | \b(?:19|20)\d{2}\b                                            # bare year
   | \b\d+(?:\.\d+)?\b                                             # bare number
     """,
@@ -70,11 +80,36 @@ def fact_tokens(text: str) -> list[str]:
     return [m.group(0) for m in _FACT_RE.finditer(text)]
 
 
+def _month_date_to_iso_prefix(token: str) -> str | None:
+    """'Dec 5, 2024' -> '2024-12-05'; 'December 2024' -> '2024-12'. None if the
+    token isn't a month-name date or lacks a year (nothing to verify against)."""
+    match = _MONTH_DATE_RE.match(token.strip())
+    if not match:
+        return None
+    month = _MONTHS[match.group(1).lower()]
+    day, year_after_day, bare_year = match.group(2), match.group(3), match.group(4)
+    year = year_after_day or bare_year
+    if not year:
+        return None
+    if day and year_after_day:
+        return f"{year}-{month:02d}-{int(day):02d}"
+    return f"{year}-{month:02d}"
+
+
+def _fact_supported(token: str, normalized_context: str) -> bool:
+    if _normalize(token) in normalized_context:
+        return True
+    # month-name dates must match ISO dates in the context ('December 2024'
+    # vs a knowledge record's '2024-12-05')
+    iso = _month_date_to_iso_prefix(token)
+    return iso is not None and iso in normalized_context
+
+
 def _unsupported_facts(sentence: str, normalized_context: str) -> list[str]:
     return [
         token
         for token in fact_tokens(sentence)
-        if _normalize(token) not in normalized_context
+        if not _fact_supported(token, normalized_context)
     ]
 
 
